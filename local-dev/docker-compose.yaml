@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:18.1
+    container_name: electronics-store-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: pvpeev
+      POSTGRES_PASSWORD: pvpeev-pvpeev
+      POSTGRES_DB: electronics-store
+    volumes:
+      # Named volume for persistent database data
+      - postgres_data:/var/lib/postgresql
+      # Bind mount for the initialization script
+      - ./electronics-store-tables.sql:/docker-entrypoint-initdb.d/electronic-store-tables.sql
+    restart: always
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    container_name: electronics-store-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: pvpeev
+      MINIO_ROOT_PASSWORD: pvpeev-pvpeev
+    volumes:
+      # Named volume for MinIO objects
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  createbuckets:
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set electronics-store http://minio:9000 pvpeev pvpeev-pvpeev;
+      /usr/bin/mc mb electronics-store/product-categories;
+      /usr/bin/mc mb electronics-store/products;
+      /usr/bin/mc mb electronics-store/product-images;
+      /usr/bin/mc anonymous set download electronics-store/product-categories;
+      /usr/bin/mc anonymous set download electronics-store/products;
+      /usr/bin/mc anonymous set download electronics-store/product-images;
+      exit 0;
+      "
+
+# Define the named volumes here
+volumes:
+  postgres_data:
+  minio_data:
