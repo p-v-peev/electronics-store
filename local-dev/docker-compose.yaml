@@ -5,8 +5,8 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: pvpeev
-      POSTGRES_PASSWORD: pvpeev-pvpeev
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: electronics-store
     volumes:
       # Named volume for persistent database data
@@ -22,8 +22,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: pvpeev
-      MINIO_ROOT_PASSWORD: pvpeev-pvpeev
+      MINIO_ROOT_USER: ${MINIIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIIO_PASSWORD}
     volumes:
       # Named volume for MinIO objects
       - minio_data:/data

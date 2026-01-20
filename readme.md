@@ -3,4 +3,10 @@
 
 ### To run this project locally you must have docker!!!
 
-To start the dev environment in Docker Compose, in the repository root, run: **docker compose -f ./local-dev/docker-compose.yaml up -d**
+1. Set the POSTGRES_USER environment variable
+2. Set the POSTGRES_PASSWORD environment variable
+3. Set the MINIIO_USER environment variable
+4. Set the MINIIO_PASSWORD environment variable
+5. run: **docker compose -f ./local-dev/docker-compose.yaml up -d**
+
+The commands above will start and configure PostgresQL container MiniIO container.
