@@ -11,8 +11,6 @@ services:
     volumes:
       # Named volume for persistent database data
       - postgres_data:/var/lib/postgresql
-      # Bind mount for the initialization script
-      - ./electronics-store-tables.sql:/docker-entrypoint-initdb.d/electronic-store-tables.sql
     restart: always
 
   minio:

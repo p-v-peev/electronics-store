@@ -1,3 +1,6 @@
+--liquibase formatted sql
+--changeset pvpeev:init-project-database
+
 CREATE TABLE "product_category" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "name" varchar(100) NOT NULL,

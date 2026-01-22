@@ -1,13 +1,21 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: electronics-store
-  r2dbc:
-    url: r2dbc:postgresql://localhost:5432/electronics-store
+  datasource:
+    url: jdbc:postgresql://localhost:5432/electronics-store
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
-
-logging:
-  level:
-    org:
-      springframework:
-        r2dbc: DEBUG
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    drop-first: false
+  threads:
+    virtual:
+      enabled: true
