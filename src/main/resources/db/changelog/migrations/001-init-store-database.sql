@@ -1,16 +1,22 @@
 --liquibase formatted sql
---changeset pvpeev:init-project-database
+--changeset pvpeev:init-store-database
 
 CREATE TABLE "product_category" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "name" varchar(100) NOT NULL,
   "description" varchar(500) NOT NULL,
-  "image_url" varchar(1000)
+  "image_url" varchar(1000) NOT NULL
 );
 
 CREATE TABLE "product_brand" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "name" varchar(100) NOT NULL
+);
+
+CREATE TABLE "product_image" (
+  "product_id" uuid NOT NULL,
+  "image_url" varchar(1000) NOT NULL,
+  PRIMARY KEY ("product_id", "image_url")
 );
 
 CREATE TABLE "product" (
@@ -19,15 +25,8 @@ CREATE TABLE "product" (
   "product_brand_id" uuid NOT NULL,
   "name" varchar(100) NOT NULL,
   "description" varchar(700) NOT NULL,
-  "thumbnail_url" varchar(1000) NOT NULL,
   "price" integer NOT NULL,
-  "quantity" integer
-);
-
-CREATE TABLE "product_image" (
-  "product_id" uuid NOT NULL,
-  "image_url" varchar(1000) NOT NULL,
-  PRIMARY KEY ("product_id", "image_url")
+  "quantity_available" integer NOT NULL
 );
 
 CREATE TABLE "payment_type" (
@@ -37,9 +36,15 @@ CREATE TABLE "payment_type" (
 );
 
 CREATE TABLE "order_status" (
+  "delivery_status_id" uuid,
+  "order_id" uuid,
+  "status_update_date" timestamptz NOT NULL DEFAULT (now()),
+  PRIMARY KEY ("delivery_status_id", "order_id")
+);
+
+CREATE TABLE "delivery_status" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
-  "name" varchar(100) NOT NULL,
-  "description" varchar(700) NOT NULL
+  "name" varchar(50) UNIQUE NOT NULL
 );
 
 CREATE TABLE "order" (
@@ -49,14 +54,14 @@ CREATE TABLE "order" (
   "order_zip_code" varchar(100),
   "order_date" timestamptz NOT NULL DEFAULT (now()),
   "payment_type_id" uuid NOT NULL,
-  "order_status_id" uuid NOT NULL,
+  "phone_number" varchar(20) NOT NULL,
   "tracking_code" varchar(150),
   "shipping_method_id" uuid NOT NULL
 );
 
 CREATE TABLE "shipping_method" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
-  "name" varchar(200)
+  "name" varchar(200) NOT NULL
 );
 
 CREATE TABLE "order_product" (
@@ -74,23 +79,23 @@ CREATE TABLE "user" (
   "last_name" varchar(150) NOT NULL,
   "password" varchar NOT NULL,
   "phone_number" varchar(50),
-  "accountExpired" boolean NOT NULL,
-  "accountLocked" boolean NOT NULL,
-  "credentialsExpired" boolean NOT NULL,
+  "account_expired" boolean NOT NULL,
+  "account_locked" boolean NOT NULL,
+  "credentials_expired" boolean NOT NULL,
   "enabled" boolean NOT NULL
 );
 
 CREATE TABLE "user_address" (
-  "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "user_id" uuid NOT NULL,
-  "address" varchar(1000),
-  "zip_code" varchar(100)
+  "address" varchar(1000) NOT NULL,
+  "zip_code" varchar(100) NOT NULL,
+  PRIMARY KEY ("user_id", "address", "zip_code")
 );
 
 CREATE TABLE "authority" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
-  "name" varchar(200),
-  "description" varchar(1000)
+  "name" varchar(200) NOT NULL,
+  "description" varchar(1000) NOT NULL
 );
 
 CREATE TABLE "user_authority" (
@@ -105,7 +110,7 @@ ALTER TABLE "product" ADD CONSTRAINT "fk_product_brand" FOREIGN KEY ("product_br
 
 ALTER TABLE "order" ADD CONSTRAINT "fk_payment_type" FOREIGN KEY ("payment_type_id") REFERENCES "payment_type" ("id");
 
-ALTER TABLE "order" ADD CONSTRAINT "fk_order_status" FOREIGN KEY ("order_status_id") REFERENCES "order_status" ("id");
+ALTER TABLE "order_status" ADD CONSTRAINT "fk_order_id" FOREIGN KEY ("order_id") REFERENCES "order" ("id");
 
 ALTER TABLE "order" ADD CONSTRAINT "fk_user_id" FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
@@ -122,3 +127,5 @@ ALTER TABLE "user_authority" ADD CONSTRAINT "fk_authority_id" FOREIGN KEY ("user
 ALTER TABLE "user_address" ADD CONSTRAINT "fk_address_id" FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
 ALTER TABLE "product_image" ADD CONSTRAINT "fk_product_id" FOREIGN KEY ("product_id") REFERENCES "product" ("id");
+
+ALTER TABLE "order_status" ADD CONSTRAINT "fk_delivery_status_id" FOREIGN KEY ("delivery_status_id") REFERENCES "delivery_status" ("id");
