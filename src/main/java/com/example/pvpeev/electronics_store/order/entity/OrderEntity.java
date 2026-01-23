@@ -1,34 +1,34 @@
 package com.example.pvpeev.electronics_store.order.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-@Entity
 @Table(name = "order")
+@RequiredArgsConstructor
+@Getter
 public class OrderEntity {
 
     @Id
-    @GeneratedValue
-    private UUID id;
+    private final UUID id;
 
-    private UUID user_id;
+    private final UUID userId;
 
-    private String orderAddress;
+    private final String orderAddress;
 
-    private String orderZipCode;
+    private final String orderZipCode;
 
-    private ZonedDateTime orderDate;
+    private final ZonedDateTime orderDate;
 
-    private UUID paymentTypeId;
+    private final UUID paymentTypeId;
 
-    private String phoneNumber;
+    private final String phoneNumber;
 
-    private String trackingCode;
+    private final String trackingCode;
 
-    private UUID shippingMethodId;
+    private final UUID shippingMethodId;
 }

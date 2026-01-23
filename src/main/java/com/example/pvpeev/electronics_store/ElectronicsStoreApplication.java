@@ -2,10 +2,10 @@ package com.example.pvpeev.electronics_store;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 
 @SpringBootApplication
-@EnableJpaRepositories
+@EnableJdbcRepositories
 public class ElectronicsStoreApplication {
 
     static void main(String[] args) {

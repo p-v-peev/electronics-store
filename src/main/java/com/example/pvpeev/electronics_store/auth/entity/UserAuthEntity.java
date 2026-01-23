@@ -5,25 +5,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Table(name = "store_user")
 @RequiredArgsConstructor
 @Getter
-public class UserEntity {
+public class UserAuthEntity {
 
     @Id
     private final UUID id;
 
     private final String email;
 
-    private final String firstName;
-
-    private final String lastName;
-
     private final String password;
-
-    private final String phoneNumber;
 
     private final boolean accountExpired;
 
@@ -32,4 +27,6 @@ public class UserEntity {
     private final boolean credentialsExpired;
 
     private final boolean enabled;
+
+    private final Set<String> authorities;
 }

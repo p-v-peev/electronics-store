@@ -14,9 +14,9 @@ CREATE TABLE "product_brand" (
 );
 
 CREATE TABLE "product_image" (
+  "id" uuid PRIMARY KEY,
   "product_id" uuid NOT NULL,
-  "image_url" varchar(1000) NOT NULL,
-  PRIMARY KEY ("product_id", "image_url")
+  "image_url" varchar(1000) NOT NULL
 );
 
 CREATE TABLE "product" (
@@ -36,10 +36,11 @@ CREATE TABLE "payment_type" (
 );
 
 CREATE TABLE "order_status" (
-  "delivery_status_id" uuid,
-  "order_id" uuid,
+  "id" uuid PRIMARY KEY,
+  "order_id" uuid NOT NULL,
+  "delivery_status_id" uuid NOT NULL,
   "status_update_date" timestamptz NOT NULL DEFAULT (now()),
-  PRIMARY KEY ("delivery_status_id", "order_id")
+  "status_description" varchar(1000) NOT NULL
 );
 
 CREATE TABLE "delivery_status" (
@@ -65,14 +66,14 @@ CREATE TABLE "shipping_method" (
 );
 
 CREATE TABLE "order_product" (
+  "id" uuid PRIMARY KEY,
   "order_id" uuid NOT NULL,
   "product_id" uuid NOT NULL,
   "quantity" integer NOT NULL,
-  "price_at_purchase" integer NOT NULL,
-  PRIMARY KEY ("order_id", "product_id")
+  "price_at_purchase" integer NOT NULL
 );
 
-CREATE TABLE "user" (
+CREATE TABLE "store_user" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "email" varchar(150) UNIQUE NOT NULL,
   "first_name" varchar(150) NOT NULL,
@@ -86,23 +87,31 @@ CREATE TABLE "user" (
 );
 
 CREATE TABLE "user_address" (
+  "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "user_id" uuid NOT NULL,
   "address" varchar(1000) NOT NULL,
-  "zip_code" varchar(100) NOT NULL,
-  PRIMARY KEY ("user_id", "address", "zip_code")
+  "zip_code" varchar(100) NOT NULL
 );
 
 CREATE TABLE "authority" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
-  "name" varchar(200) NOT NULL,
-  "description" varchar(1000) NOT NULL
+  "name" varchar(200) UNIQUE NOT NULL,
+  "description" varchar(1000) UNIQUE NOT NULL
 );
 
 CREATE TABLE "user_authority" (
-  "user_id" uuid,
-  "user_authority_id" uuid,
-  PRIMARY KEY ("user_id", "user_authority_id")
+  "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
+  "user_id" uuid NOT NULL,
+  "authority_id" uuid NOT NULL
 );
+
+CREATE UNIQUE INDEX ON "product_image" ("product_id", "image_url");
+
+CREATE UNIQUE INDEX ON "order_product" ("order_id", "product_id");
+
+CREATE UNIQUE INDEX ON "user_address" ("user_id", "address", "zip_code");
+
+CREATE UNIQUE INDEX ON "user_authority" ("user_id", "authority_id");
 
 ALTER TABLE "product" ADD CONSTRAINT "fk_product_category" FOREIGN KEY ("product_category_id") REFERENCES "product_category" ("id");
 
@@ -112,7 +121,7 @@ ALTER TABLE "order" ADD CONSTRAINT "fk_payment_type" FOREIGN KEY ("payment_type_
 
 ALTER TABLE "order_status" ADD CONSTRAINT "fk_order_id" FOREIGN KEY ("order_id") REFERENCES "order" ("id");
 
-ALTER TABLE "order" ADD CONSTRAINT "fk_user_id" FOREIGN KEY ("user_id") REFERENCES "user" ("id");
+ALTER TABLE "order" ADD CONSTRAINT "fk_user_id" FOREIGN KEY ("user_id") REFERENCES "store_user" ("id");
 
 ALTER TABLE "order" ADD CONSTRAINT "fk_shipping_method" FOREIGN KEY ("shipping_method_id") REFERENCES "shipping_method" ("id");
 
@@ -120,11 +129,11 @@ ALTER TABLE "order_product" ADD CONSTRAINT "fk_order_id" FOREIGN KEY ("order_id"
 
 ALTER TABLE "order_product" ADD CONSTRAINT "fk_product_id" FOREIGN KEY ("product_id") REFERENCES "product" ("id");
 
-ALTER TABLE "user_authority" ADD CONSTRAINT "fk_user_id" FOREIGN KEY ("user_id") REFERENCES "user" ("id");
+ALTER TABLE "user_authority" ADD CONSTRAINT "fk_user_id" FOREIGN KEY ("user_id") REFERENCES "store_user" ("id");
 
-ALTER TABLE "user_authority" ADD CONSTRAINT "fk_authority_id" FOREIGN KEY ("user_authority_id") REFERENCES "authority" ("id");
+ALTER TABLE "user_authority" ADD CONSTRAINT "fk_authority_id" FOREIGN KEY ("authority_id") REFERENCES "authority" ("id");
 
-ALTER TABLE "user_address" ADD CONSTRAINT "fk_address_id" FOREIGN KEY ("user_id") REFERENCES "user" ("id");
+ALTER TABLE "user_address" ADD CONSTRAINT "fk_address_id" FOREIGN KEY ("user_id") REFERENCES "store_user" ("id");
 
 ALTER TABLE "product_image" ADD CONSTRAINT "fk_product_id" FOREIGN KEY ("product_id") REFERENCES "product" ("id");
 
