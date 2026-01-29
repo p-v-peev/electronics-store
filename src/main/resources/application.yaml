@@ -3,9 +3,9 @@ server:
 
 spring:
   application:
-    name: electronics-store
+    name: store-application
   datasource:
-    url: jdbc:postgresql://localhost:5432/electronics-store
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver

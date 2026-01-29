@@ -1,13 +1,13 @@
 services:
   db:
     image: postgres:18.1
-    container_name: electronics-store-postgres
+    container_name: store-postgres
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: electronics-store
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       # Named volume for persistent database data
       - postgres_data:/var/lib/postgresql
@@ -15,7 +15,7 @@ services:
 
   minio:
     image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
-    container_name: electronics-store-minio
+    container_name: store-minio
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -40,11 +40,11 @@ services:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set electronics-store http://minio:9000 pvpeev pvpeevpvpeev;
-      /usr/bin/mc mb electronics-store/product-thumbnails;
-      /usr/bin/mc mb electronics-store/product-images;
-      /usr/bin/mc anonymous set download electronics-store/product-thumbnails;
-      /usr/bin/mc anonymous set download electronics-store/product-images;
+      /usr/bin/mc alias set store-minio http://minio:9000 pvpeev pvpeevpvpeev;
+      /usr/bin/mc mb store-minio/product-thumbnails;
+      /usr/bin/mc mb store-minio/product-images;
+      /usr/bin/mc anonymous set download store-minio/product-thumbnails;
+      /usr/bin/mc anonymous set download store-minio/product-images;
       exit 0;
       "
 
