@@ -13,11 +13,10 @@ import java.util.UUID;
 public class ProductCategoryEntity {
 
     @Id
-    private final UUID id;
+    private final Integer id;
 
     private final String name;
 
     private final String description;
 
-    private final String imageUrl;
 }

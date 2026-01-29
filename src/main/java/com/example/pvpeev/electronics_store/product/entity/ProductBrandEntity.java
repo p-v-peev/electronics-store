@@ -13,7 +13,8 @@ import java.util.UUID;
 public class ProductBrandEntity {
 
     @Id
-    private final UUID id;
+    private final Integer id;
 
     private final String name;
+
 }

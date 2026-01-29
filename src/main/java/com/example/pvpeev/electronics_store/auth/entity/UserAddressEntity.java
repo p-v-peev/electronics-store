@@ -13,11 +13,9 @@ import java.util.UUID;
 public class UserAddressEntity {
 
     @Id
-    private final UUID id;
+    private final Long id;
 
     private final UUID userId;
 
     private final String address;
-
-    private final String zipCode;
 }

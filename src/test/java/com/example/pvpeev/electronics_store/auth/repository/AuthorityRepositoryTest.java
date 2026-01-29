@@ -28,18 +28,18 @@ public class AuthorityRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testSystemAuthoritiesExist() {
         final HashSet<AuthorityEntity> authorities = new HashSet<>(authorityRepository.findAll());
-        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_USER.name())),
-                String.format("The default %s roles is not in the database", ROLE_STORE_USER.name())
+        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_USER.getValue())),
+                String.format("The default %s roles is not in the database", ROLE_STORE_USER.getValue())
         );
 
-        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_WAREHOUSE_WORKER.name())),
-                String.format("The default %s roles is not in the database", ROLE_STORE_WAREHOUSE_WORKER.name())
+        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_WAREHOUSE_WORKER.getValue())),
+                String.format("The default %s roles is not in the database", ROLE_STORE_WAREHOUSE_WORKER.getValue())
         );
-        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_PRODUCT_ADMIN.name())),
-                String.format("The default %s roles is not in the database", ROLE_STORE_PRODUCT_ADMIN.name())
+        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_PRODUCT_ADMIN.getValue())),
+                String.format("The default %s roles is not in the database", ROLE_STORE_PRODUCT_ADMIN.getValue())
         );
-        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_AUTHORITY_ADMIN.name())),
-                String.format("The default %s roles is not in the database", ROLE_STORE_AUTHORITY_ADMIN.name())
+        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_AUTHORITY_ADMIN.getValue())),
+                String.format("The default %s roles is not in the database", ROLE_STORE_AUTHORITY_ADMIN.getValue())
         );
     }
 

@@ -26,4 +26,7 @@ public class ProductEntity {
     private final int price;
 
     private final int quantityAvailable;
+
+    private final String thumbnailImageUrl;
+
 }

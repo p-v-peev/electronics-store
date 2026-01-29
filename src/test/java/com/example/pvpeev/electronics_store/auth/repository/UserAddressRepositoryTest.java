@@ -31,25 +31,25 @@ public class UserAddressRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testAddingTheSameAddressTwiceThrowsException() {
-        final UserEntity userEntity = new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", false, false, false, false);
+        final UserEntity userEntity = new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true);
         final UUID userId = userRepository.save(userEntity).getId();
 
-        userAddressRepository.save(new UserAddressEntity(null, userId, "Test street 1", "032"));
+        userAddressRepository.save(new UserAddressEntity(null, userId, "Test street 1"));
         assertThrows(Throwable.class,
-                () -> userAddressRepository.save(new UserAddressEntity(null, userId, "Test street 1", "032")),
+                () -> userAddressRepository.save(new UserAddressEntity(null, userId, "Test street 1")),
                 "The same address record can't be saved twice");
     }
 
     @Test
     public void testAddingTwoDifferentAddresses() {
-        final UserEntity userEntity = new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", false, false, false, false);
+        final UserEntity userEntity = new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true);
         final UUID userId = userRepository.save(userEntity).getId();
 
         final String street1 = "Test street 1";
         final String street2 = "Test street 2";
 
-        final UserAddressEntity uae1 = new UserAddressEntity(null, userId, street1, "032");
-        final UserAddressEntity uae2 = new UserAddressEntity(null, userId, street2, "032");
+        final UserAddressEntity uae1 = new UserAddressEntity(null, userId, street1);
+        final UserAddressEntity uae2 = new UserAddressEntity(null, userId, street2);
 
         userAddressRepository.save(uae1);
         userAddressRepository.save(uae2);

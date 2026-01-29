@@ -40,7 +40,7 @@ public class UserRepositoryTest extends BaseRepositoryTest {
         final AuthorityEntity authority = authorityRepository.findAll().getFirst();
 
 
-        final UserEntity userEntity = new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", false, false, false, false);
+        final UserEntity userEntity = new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true);
         final UUID userId = userRepository.save(userEntity).getId();
 
         final UserAuthorityEntity userAuthorityEntity = new UserAuthorityEntity(null, userId, authority.getId());

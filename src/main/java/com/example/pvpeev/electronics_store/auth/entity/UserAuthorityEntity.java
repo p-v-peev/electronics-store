@@ -13,9 +13,9 @@ import java.util.UUID;
 public class UserAuthorityEntity {
 
     @Id
-    private final UUID id;
+    private final Long id;
 
     private final UUID userId;
 
-    private final UUID authorityId;
+    private final int authorityId;
 }

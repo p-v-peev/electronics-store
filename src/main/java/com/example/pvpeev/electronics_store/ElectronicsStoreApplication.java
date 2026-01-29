@@ -3,9 +3,13 @@ package com.example.pvpeev.electronics_store;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+
+import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
 
 @SpringBootApplication
 @EnableJdbcRepositories
+@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 public class ElectronicsStoreApplication {
 
     static void main(String[] args) {

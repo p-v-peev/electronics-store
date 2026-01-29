@@ -16,8 +16,20 @@ spring:
   threads:
     virtual:
       enabled: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
 logging:
   level:
     org.springframework.jdbc.core: DEBUG
     org.springframework.jdbc.datasource: DEBUG
 
+
+storage:
+  s3:
+    endpoint: "http://localhost:9000"
+    region: "dummy" # MinIO doesn't care, but the SDK requires a value
+    access-key: ${MINIIO_USER}
+    secret-key: ${MINIIO_PASSWORD}
+    path-style-access: true # Set to false when moving to AWS S3

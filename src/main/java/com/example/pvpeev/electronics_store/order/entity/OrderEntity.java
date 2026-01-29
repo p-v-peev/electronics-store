@@ -20,8 +20,6 @@ public class OrderEntity {
 
     private final String orderAddress;
 
-    private final String orderZipCode;
-
     private final ZonedDateTime orderDate;
 
     private final UUID paymentTypeId;

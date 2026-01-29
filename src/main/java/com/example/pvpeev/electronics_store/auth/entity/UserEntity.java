@@ -25,11 +25,5 @@ public class UserEntity {
 
     private final String phoneNumber;
 
-    private final boolean accountExpired;
-
-    private final boolean accountLocked;
-
-    private final boolean credentialsExpired;
-
     private final boolean enabled;
 }

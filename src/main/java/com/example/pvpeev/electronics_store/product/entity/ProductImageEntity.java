@@ -18,4 +18,5 @@ public class ProductImageEntity {
     private final UUID productId;
 
     private final String imageUrl;
+
 }

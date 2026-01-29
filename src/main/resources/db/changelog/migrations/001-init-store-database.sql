@@ -1,30 +1,27 @@
---liquibase formatted sql
---changeset pvpeev:init-store-database
-
 CREATE TABLE "product_category" (
-  "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
-  "name" varchar(100) NOT NULL,
-  "description" varchar(500) NOT NULL,
-  "image_url" varchar(1000) NOT NULL
+  "id" smallserial PRIMARY KEY,
+  "name" varchar(100) UNIQUE NOT NULL,
+  "description" varchar(500) NOT NULL
 );
 
 CREATE TABLE "product_brand" (
-  "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
-  "name" varchar(100) NOT NULL
+  "id" smallserial PRIMARY KEY,
+  "name" varchar(100) UNIQUE NOT NULL
 );
 
 CREATE TABLE "product_image" (
-  "id" uuid PRIMARY KEY,
+  "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "product_id" uuid NOT NULL,
   "image_url" varchar(1000) NOT NULL
 );
 
 CREATE TABLE "product" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
-  "product_category_id" uuid NOT NULL,
-  "product_brand_id" uuid NOT NULL,
+  "product_category_id" smallint NOT NULL,
+  "product_brand_id" smallint NOT NULL,
   "name" varchar(100) NOT NULL,
   "description" varchar(700) NOT NULL,
+  "thumbnail_image_url" varchar(1000) UNIQUE NOT NULL,
   "price" integer NOT NULL,
   "quantity_available" integer NOT NULL
 );
@@ -76,40 +73,43 @@ CREATE TABLE "order_product" (
 CREATE TABLE "store_user" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "email" varchar(150) UNIQUE NOT NULL,
-  "first_name" varchar(150) NOT NULL,
-  "last_name" varchar(150) NOT NULL,
+  "first_name" varchar(150),
+  "last_name" varchar(150),
   "password" varchar NOT NULL,
   "phone_number" varchar(50),
-  "account_expired" boolean NOT NULL,
-  "account_locked" boolean NOT NULL,
-  "credentials_expired" boolean NOT NULL,
-  "enabled" boolean NOT NULL
+  "account_expired" boolean NOT NULL DEFAULT false,
+  "account_locked" boolean NOT NULL DEFAULT false,
+  "credentials_expired" boolean NOT NULL DEFAULT false,
+  "enabled" boolean NOT NULL DEFAULT true
 );
 
 CREATE TABLE "user_address" (
-  "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
+  "id" bigserial PRIMARY KEY,
   "user_id" uuid NOT NULL,
-  "address" varchar(1000) NOT NULL,
-  "zip_code" varchar(100) NOT NULL
+  "address" varchar(1000) NOT NULL
 );
 
 CREATE TABLE "authority" (
-  "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
+  "id" smallserial PRIMARY KEY,
   "name" varchar(200) UNIQUE NOT NULL,
   "description" varchar(1000) UNIQUE NOT NULL
 );
 
 CREATE TABLE "user_authority" (
-  "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
+  "id" bigserial PRIMARY KEY,
   "user_id" uuid NOT NULL,
-  "authority_id" uuid NOT NULL
+  "authority_id" smallint NOT NULL
 );
 
 CREATE UNIQUE INDEX ON "product_image" ("product_id", "image_url");
 
+CREATE INDEX ON "product" ("product_category_id", "product_brand_id");
+
+CREATE INDEX ON "order" ("user_id");
+
 CREATE UNIQUE INDEX ON "order_product" ("order_id", "product_id");
 
-CREATE UNIQUE INDEX ON "user_address" ("user_id", "address", "zip_code");
+CREATE UNIQUE INDEX ON "user_address" ("user_id", "address");
 
 CREATE UNIQUE INDEX ON "user_authority" ("user_id", "authority_id");
 

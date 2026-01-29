@@ -5,15 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.UUID;
-
 @Table(name = "authority")
 @RequiredArgsConstructor
 @Getter
 public class AuthorityEntity {
 
     @Id
-    private final UUID id;
+    private final Integer id;
 
     private final String name;
 
