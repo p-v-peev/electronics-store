@@ -37,7 +37,7 @@ public class UserAddressService {
         return userAddressMapper.toResponse(save);
     }
 
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         int result = userAddressRepository.deleteByIdWithCount(id);
         if (result == 0) {
             throw new ResourceNotFoundException();

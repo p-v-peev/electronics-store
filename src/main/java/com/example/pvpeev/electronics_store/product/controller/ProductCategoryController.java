@@ -43,19 +43,19 @@ public class ProductCategoryController {
         return ResponseEntity.created(ucb.path(PATH).build().toUri()).body(response);
     }
 
-    @GetMapping("/{id}/products")
-    public ResponseEntity<Page<ProductResponse>> getAllProducts(@PathVariable("id") Integer id, @PageableDefault Pageable pageable) {
+    @GetMapping("/{path}/products")
+    public ResponseEntity<Page<ProductResponse>> getAllProducts(@PathVariable("path") String path, @PageableDefault Pageable pageable) {
         if (pageable.getPageSize() > NumericConstants.MAX_PAGE_REQUEST.getValue()) {
             return ResponseEntity.badRequest().build();
         }
-        final Page<ProductResponse> page = productService.getAll(id, pageable);
+        final Page<ProductResponse> page = productService.getAll(path, pageable);
         return ResponseEntity.ok(page);
     }
 
-    @PostMapping("/{id}/products")
-    public ResponseEntity<ProductResponse> create(@ModelAttribute ProductRequest request, @PathVariable("id") UUID id, UriComponentsBuilder ucb) {
-        final String s = productService.create(request, id);
-        return ResponseEntity.created(ucb.path(PATH).pathSegment("{id}", "products").build(s)).build();
+    @PostMapping("/{path}/products")
+    public ResponseEntity<ProductResponse> create(@ModelAttribute ProductRequest request, @PathVariable("path") String path, UriComponentsBuilder ucb) {
+        productService.create(request, path);
+        return ResponseEntity.created(ucb.path(PATH).pathSegment("{id}", "products").build(path)).build();
     }
 
     // TODO handle delete

@@ -9,8 +9,8 @@ import java.util.UUID;
 @Getter
 public class ProductResponse {
     private final UUID id;
-    private final UUID productCategoryId;
-    private final UUID productBrandId;
+    private final Integer productCategoryId;
+    private final Integer productBrandId;
     private final String name;
     private final String description;
     private final int price;

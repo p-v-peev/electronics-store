@@ -14,5 +14,5 @@ public interface UserAuthorityRepository extends CrudRepository<UserAuthorityEnt
 
     int deleteByUserIdAndAuthorityId(UUID userId, Integer authorityId);
 
-    void deleteByUserId(UUID id);
+    int deleteByUserId(UUID id);
 }

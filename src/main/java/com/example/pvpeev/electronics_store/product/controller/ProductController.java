@@ -27,12 +27,6 @@ public class ProductController {
 
     private final ProductImageService productImageService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductResponse> getById(@PathVariable("id") UUID id) {
-        Optional<ProductResponse> response = productService.getById(id);
-        return response.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/{id}/images")
     public ResponseEntity<List<ProductImageResponse>> getProductImages(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(productImageService.getByProductId(id));

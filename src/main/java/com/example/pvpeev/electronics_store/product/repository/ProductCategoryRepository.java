@@ -6,6 +6,7 @@ import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -14,5 +15,7 @@ public interface ProductCategoryRepository extends ListCrudRepository<ProductCat
     @Modifying
     @Query("DELETE FROM user_address WHERE id = :id")
     int deleteByIdWithCount(Integer id);
+
+    Optional<ProductCategoryEntity> findByPath(String path);
 
 }

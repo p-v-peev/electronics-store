@@ -12,6 +12,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.HashSet;
 
 import static com.example.pvpeev.electronics_store.auth.roles.RoleConstants.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
@@ -26,12 +27,12 @@ public class AuthorityRepositoryTest extends BaseRepositoryTest {
     private AuthorityRepository authorityRepository;
 
     @Test
-    public void testSystemAuthoritiesExist() {
+    public void testLiquibaseInsertsTheDefaultAuthorities() {
         final HashSet<AuthorityEntity> authorities = new HashSet<>(authorityRepository.findAll());
+        assertEquals(4, authorities.size(), "Exactly 4 authorities must exist by default");
         assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_USER.getValue())),
                 String.format("The default %s roles is not in the database", ROLE_STORE_USER.getValue())
         );
-
         assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_WAREHOUSE_WORKER.getValue())),
                 String.format("The default %s roles is not in the database", ROLE_STORE_WAREHOUSE_WORKER.getValue())
         );

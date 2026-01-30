@@ -7,6 +7,7 @@ import com.example.pvpeev.electronics_store.product.dto.ProductImageResponse;
 import com.example.pvpeev.electronics_store.product.entity.ProductImageEntity;
 import com.example.pvpeev.electronics_store.product.mapper.ProductImageMapper;
 import com.example.pvpeev.electronics_store.product.repository.ProductImageRepository;
+import com.example.pvpeev.electronics_store.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,17 +24,28 @@ public class ProductImageService {
 
     private final ProductImageRepository productImageRepository;
 
-    private final BlobStorageService fileUploadService;
+    private final ProductRepository productRepository;
+
+    private final BlobStorageService blobStorageService;
 
     public List<ProductImageResponse> getByProductId(UUID id) {
+        final boolean exists = productRepository.existsById(id);
+        if (!exists) {
+            throw new ResourceNotFoundException();
+        }
         return productImageRepository.findAllByProductId(id).stream().map(productImageMapper::toResponse).toList();
     }
 
     public ProductImageResponse create(ProductImageRequest request, UUID productId) {
-        final String imageUrl = fileUploadService.uploadFile(PRODUCT_IMAGES_STORAGE.getValue(), request.getImage());
-        final ProductImageEntity entity = productImageMapper.toEntity(request, productId, imageUrl);
-        final ProductImageEntity save = productImageRepository.save(entity);
-        return productImageMapper.toResponse(save);
+        final String imageUrl = blobStorageService.uploadFile(PRODUCT_IMAGES_STORAGE.getValue(), request.getImage());
+        try {
+            final ProductImageEntity entity = productImageMapper.toEntity(request, productId, imageUrl);
+            final ProductImageEntity save = productImageRepository.save(entity);
+            return productImageMapper.toResponse(save);
+        } catch (Exception e) {
+            blobStorageService.deleteFile(PRODUCT_IMAGES_STORAGE.getValue(), imageUrl.substring(imageUrl.lastIndexOf("/") + 1));
+            throw e;
+        }
     }
 
     public void delete(UUID id) {

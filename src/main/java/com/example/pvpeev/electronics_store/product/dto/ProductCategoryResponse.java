@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class ProductCategoryResponse {
     private final Integer id;
+    private final String path;
     private final String name;
     private final String description;
 }

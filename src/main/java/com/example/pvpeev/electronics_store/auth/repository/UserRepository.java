@@ -26,7 +26,7 @@ public interface UserRepository extends CrudRepository<UserEntity, UUID> {
 
     @Modifying
     @Query("""
-            UPDATE store_user SET email = CAST(id AS VARCHAR), first_name = NULL, last_name = NULL, password = CAST(id AS VARCHAR), phone_number = NULL, account_expired = true, account_locked = true, enabled = false
+            UPDATE store_user SET email = CAST(id AS VARCHAR), first_name = NULL, last_name = NULL, password = '{noop}' || CAST(id AS VARCHAR), phone_number = NULL, account_expired = true, account_locked = true, enabled = false
             WHERE enabled = true AND id = :id
             """)
     int softDeleteUser(UUID id);

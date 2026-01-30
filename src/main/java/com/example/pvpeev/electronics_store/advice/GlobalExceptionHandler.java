@@ -1,5 +1,6 @@
 package com.example.pvpeev.electronics_store.advice;
 
+import com.example.pvpeev.electronics_store.advice.exception.BadRequestException;
 import com.example.pvpeev.electronics_store.advice.exception.FileUploadException;
 import com.example.pvpeev.electronics_store.advice.exception.ResourceConflictExceptionException;
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
@@ -27,6 +28,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(FileUploadException.class)
     public ResponseEntity<Void> handleFileUploadError(FileUploadException exception) {
         return ResponseEntity.internalServerError().build();
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Void> handleBadRequest(BadRequestException exception) {
+        return ResponseEntity.badRequest().build();
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

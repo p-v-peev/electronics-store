@@ -21,7 +21,7 @@ public class AddressController {
     private final UserAddressService userAddressService;
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAddresses(@PathVariable("id") UUID id) {
+    public ResponseEntity<Void> deleteAddresses(@PathVariable("id") Long id) {
         userAddressService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

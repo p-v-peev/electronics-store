@@ -15,9 +15,9 @@ public class ProductEntity {
     @Id
     private final UUID id;
 
-    private final UUID productCategoryId;
+    private final Integer productCategoryId;
 
-    private final UUID productBrandId;
+    private final Integer productBrandId;
 
     private final String name;
 

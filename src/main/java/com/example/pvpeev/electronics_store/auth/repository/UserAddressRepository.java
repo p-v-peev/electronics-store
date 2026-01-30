@@ -14,10 +14,10 @@ public interface UserAddressRepository extends ListCrudRepository<UserAddressEnt
 
     @Modifying
     @Query("DELETE FROM user_address WHERE id = :id")
-    int deleteByIdWithCount(UUID id);
+    int deleteByIdWithCount(Long id);
 
 
     List<UserAddressEntity> findAllByUserId(UUID userId);
 
-    void deleteByUserId(UUID id);
+    int deleteByUserId(UUID id);
 }

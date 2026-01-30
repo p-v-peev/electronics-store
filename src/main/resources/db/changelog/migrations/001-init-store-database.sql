@@ -1,5 +1,6 @@
 CREATE TABLE "product_category" (
   "id" smallserial PRIMARY KEY,
+  "path" varchar(100) UNIQUE NOT NULL,
   "name" varchar(100) UNIQUE NOT NULL,
   "description" varchar(500) NOT NULL
 );
@@ -19,7 +20,7 @@ CREATE TABLE "product" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "product_category_id" smallint NOT NULL,
   "product_brand_id" smallint NOT NULL,
-  "name" varchar(100) NOT NULL,
+  "name" varchar(100) UNIQUE NOT NULL,
   "description" varchar(700) NOT NULL,
   "thumbnail_image_url" varchar(1000) UNIQUE NOT NULL,
   "price" integer NOT NULL,
