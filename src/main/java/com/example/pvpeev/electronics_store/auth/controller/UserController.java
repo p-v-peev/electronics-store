@@ -28,8 +28,8 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Void> create(@RequestBody UserRequest request, UriComponentsBuilder ucb) {
-        final String s = userService.create(request);
-        return ResponseEntity.created(ucb.path(PATH).pathSegment("{id}").build(s)).build();
+        final UUID userId = userService.create(request);
+        return ResponseEntity.created(ucb.path(PATH).pathSegment("{id}").build(userId)).build();
     }
 
     @GetMapping("/{id}")
@@ -63,14 +63,14 @@ public class UserController {
 
     @PostMapping("/{userId}/authorities/{authorityId}")
     public ResponseEntity<AuthorityResponse> createUserAuthority(@PathVariable("userId") UUID userId, @PathVariable("authorityId") Integer authorityId, UriComponentsBuilder ucb) {
-        final AuthorityResponse authority = userAuthorityService.createUserAuthority(userId, authorityId);
+        final AuthorityResponse authority = userAuthorityService.grantUserAuthority(userId, authorityId);
         final URI uri = ucb.path(PATH).pathSegment("{id}", "authorities").build(userId);
         return ResponseEntity.created(uri).body(authority);
     }
 
     @DeleteMapping("/{userId}/authorities/{authorityId}")
     public ResponseEntity<Void> revokeUseAuthority(@PathVariable("userId") UUID userId, @PathVariable("authorityId") Integer authorityId) {
-        userAuthorityService.revokeAuthority(userId, authorityId);
+        userAuthorityService.revokeUserAuthority(userId, authorityId);
         return ResponseEntity.noContent().build();
     }
 }

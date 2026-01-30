@@ -44,7 +44,7 @@ public class UserRepositoryTest extends BaseRepositoryTest {
     }
 
     @Test
-    public void testGrantUserAuthority() {
+    public void testFindUserAuthByEmail() {
         final AuthorityEntity authority = authorityRepository.findAll().getFirst();
         final UserEntity userEntity = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
 
@@ -63,23 +63,23 @@ public class UserRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testSoftDeleteUser() {
-        final UserEntity userEntity = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
+        final UserEntity user1 = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
+        final UserEntity user2 = userRepository.save(new UserEntity(null, "igivanov@store.com", "Ivan", "Ivanov", "{noop}password", "+359897401214", true));
 
-        userRepository.softDeleteUser(userEntity.getId());
-        assertTrue(userRepository.findUserAuthByEmail(userEntity.getEmail()).isEmpty(), "The application must not find the user");
-        assertTrue(userRepository.findByIdAndEnabledIsTrue(userEntity.getId()).isEmpty(), "The application must not find the user");
+        final int deletedUsers = userRepository.softDeleteUser(user1.getId());
+        assertEquals(1, deletedUsers, "Exactly one user must be deleted");
+        assertFalse(userRepository.findUserAuthByEmail(user2.getEmail()).isEmpty(), "User 2 must not be deleted");
+        assertFalse(userRepository.findByIdAndEnabledIsTrue(user2.getId()).isEmpty(), "User 2 must not be deleted");
 
-        final Optional<UserEntity> userOptional = userRepository.findById(userEntity.getId());
+        assertTrue(userRepository.findUserAuthByEmail(user1.getEmail()).isEmpty(), "The application must not find the user");
+        assertTrue(userRepository.findByIdAndEnabledIsTrue(user1.getId()).isEmpty(), "The application must not find the user");
+
+        final Optional<UserEntity> userOptional = userRepository.findById(user1.getId());
         assertFalse(userOptional.isEmpty(), "The record must stay in the database");
+        final UserEntity softDeletedUser = userOptional.get();
 
-        final UserEntity user = userOptional.get();
-        assertEquals(userEntity.getId(), user.getId(), "The id must not change to keep the DB relations valid");
-        assertEquals(userEntity.getId().toString(), user.getEmail(), "The email must be deleted as per GDPR");
-        assertEquals("{noop}" + userEntity.getId().toString(), user.getPassword(), "The password must be changed to something really hard to guess");
-        assertNull(user.getFirstName(), "The first name must be null as per GDPR");
-        assertNull(user.getLastName(), "The last name must be null as per GDPR");
-        assertNull(user.getPhoneNumber(), "The phone number must be null as per GDPR");
-        assertFalse(user.isEnabled(), "The account must be disabled to prevent further use");
+        final UserEntity expectedEntity = new UserEntity(user1.getId(), user1.getId().toString(), null, null, "{noop}" + user1.getId(), null, false);
+        assertEquals(expectedEntity, softDeletedUser);
 
         // Since the previous record is anonymised the application must be able to add the same user again
         userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));

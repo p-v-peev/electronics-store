@@ -45,11 +45,11 @@ public class UserService {
     }
 
     @Transactional
-    public String create(UserRequest request) {
+    public UUID create(UserRequest request) {
         final UserEntity entity = userMapper.toEntity(request, true);
         final UUID id = userRepository.save(entity).getId();
         userAuthorityRepository.save(new UserAuthorityEntity(null, id, roleStoreUserId));
-        return id.toString();
+        return id;
     }
 
     public Optional<UserResponse> getById(UUID id) {

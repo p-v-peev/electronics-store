@@ -32,9 +32,8 @@ public class UserAddressService {
     }
 
     public UserAddressResponse createUserAddress(UserAddressRequest request, UUID userId) {
-        final UserAddressEntity entity = userAddressMapper.toEntity(request, userId);
-        final UserAddressEntity save = userAddressRepository.save(entity);
-        return userAddressMapper.toResponse(save);
+        final UserAddressEntity entity = userAddressRepository.save(userAddressMapper.toEntity(request, userId));
+        return userAddressMapper.toResponse(entity);
     }
 
     public void deleteById(Long id) {

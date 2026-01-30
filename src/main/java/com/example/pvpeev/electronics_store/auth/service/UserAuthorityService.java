@@ -36,16 +36,18 @@ public class UserAuthorityService {
         return authorityRepository.findAllById(list).stream().map(authorityMapper::toResponse).toList();
     }
 
-    public AuthorityResponse createUserAuthority(UUID userId, Integer authorityId) {
+    public AuthorityResponse grantUserAuthority(UUID userId, Integer authorityId) {
         final UserAuthorityEntity userAuthority = new UserAuthorityEntity(null, userId, authorityId);
         userAuthorityRepository.save(userAuthority);
+
         // Must always have result because of the relation in the database
         final Optional<AuthorityEntity> authorityEntityOptional = authorityRepository.findById(authorityId);
         final AuthorityEntity authorityEntity = authorityEntityOptional.get();
+
         return authorityMapper.toResponse(authorityEntity);
     }
 
-    public void revokeAuthority(UUID userId, Integer authorityId) {
+    public void revokeUserAuthority(UUID userId, Integer authorityId) {
         final int i = userAuthorityRepository.deleteByUserIdAndAuthorityId(userId, authorityId);
         if (i == 0) {
             throw new ResourceNotFoundException();

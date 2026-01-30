@@ -1,5 +1,6 @@
 package com.example.pvpeev.electronics_store.auth.entity;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 @Table(name = "user_authority")
 @RequiredArgsConstructor
+@EqualsAndHashCode
 @Getter
 public class UserAuthorityEntity {
 

@@ -7,5 +7,4 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class UserAddressRequest {
     private final String address;
-    private final String zipCode;
 }
