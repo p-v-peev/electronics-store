@@ -2,7 +2,6 @@ package com.example.pvpeev.electronics_store.product.controller;
 
 import com.example.pvpeev.electronics_store.product.dto.ProductImageRequest;
 import com.example.pvpeev.electronics_store.product.dto.ProductImageResponse;
-import com.example.pvpeev.electronics_store.product.dto.ProductResponse;
 import com.example.pvpeev.electronics_store.product.service.ProductImageService;
 import com.example.pvpeev.electronics_store.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.example.pvpeev.electronics_store.product.controller.ProductController.PATH;

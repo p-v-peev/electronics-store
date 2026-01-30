@@ -6,8 +6,6 @@ import com.example.pvpeev.electronics_store.product.entity.ProductEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.util.UUID;
-
 @Mapper
 public interface ProductMapper {
 
