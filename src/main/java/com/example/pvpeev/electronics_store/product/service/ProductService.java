@@ -29,7 +29,7 @@ public class ProductService {
 
     private final ProductCategoryRepository productCategoryRepository;
 
-    private final BlobStorageService fileUploadService;
+    private final BlobStorageService blobStorageService;
 
 
     public Page<ProductResponse> getAll(String path, Pageable pageable) {
@@ -46,9 +46,15 @@ public class ProductService {
         if (entity.isEmpty()) {
             throw new BadRequestException();
         }
-        final String imageUrl = fileUploadService.uploadFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), request.getThumbnailImage());
-        final ProductEntity productEntity = productMapper.toEntity(request, entity.get().getId(), imageUrl);
-        productRepository.save(productEntity);
+        final String imageUrl = blobStorageService.uploadFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), request.getThumbnailImage());
+
+        try {
+            final ProductEntity productEntity = productMapper.toEntity(request, entity.get().getId(), imageUrl);
+            productRepository.save(productEntity);
+        } catch (Exception e) {
+            blobStorageService.deleteFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), imageUrl.substring(imageUrl.lastIndexOf("/") + 1));
+            throw e;
+        }
     }
 
     public void deleteById(Integer id) {
