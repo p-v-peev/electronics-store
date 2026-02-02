@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
+import static com.example.pvpeev.electronics_store.auth.roles.RoleConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.list;
 
@@ -25,10 +26,10 @@ public class AuthorityControllerTest {
                 .convertTo(list(AuthorityResponse.class))
                 .extracting(AuthorityResponse::getName)
                 .containsExactlyInAnyOrder(
-                        "ROLE_STORE_USER",
-                        "ROLE_STORE_WAREHOUSE_WORKER",
-                        "ROLE_STORE_PRODUCT_ADMIN",
-                        "ROLE_STORE_AUTHORITY_ADMIN"
+                        ROLE_STORE_USER.getValue(),
+                        ROLE_STORE_WAREHOUSE_WORKER.getValue(),
+                        ROLE_STORE_PRODUCT_ADMIN.getValue(),
+                        ROLE_STORE_AUTHORITY_ADMIN.getValue()
                 );
     }
 }
