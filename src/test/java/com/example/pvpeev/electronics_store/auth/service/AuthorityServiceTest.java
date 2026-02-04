@@ -14,8 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static com.example.pvpeev.electronics_store.auth.roles.RoleConstants.ROLE_STORE_USER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_USER;
+import static org.assertj.core.api.Assertions.assertThatList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,21 +32,21 @@ public class AuthorityServiceTest {
 
     @Test
     void testFindAllAuthorities() {
-        final Integer authorityId = 1;
-        final String authorityDescription = "Regular store user with no specific authorities";
-        final AuthorityEntity entity = new AuthorityEntity(authorityId, ROLE_STORE_USER.getValue(), authorityDescription);
+        final AuthorityEntity entity = new AuthorityEntity(1, ROLE_STORE_USER.getAuthority(), "Users registered via the browser with no special permissions.");
 
         when(authorityRepository.findAll()).thenReturn(List.of(entity));
 
-        final List<AuthorityResponse> authorities = authorityService.findAll();
-        assertEquals(1, authorities.size(), "The service must return exactly one authority");
-        final AuthorityResponse response = authorities.getFirst();
 
-        final AuthorityResponse expectedResponse = new AuthorityResponse(authorityId, ROLE_STORE_USER.getValue(), authorityDescription);
-        assertEquals(expectedResponse, response, "The response doesn't match the expected response");
+        final AuthorityResponse expectedResponse = new AuthorityResponse(entity.getId(), entity.getName(), entity.getDescription());
+
+        assertThatList(authorityService.findAll())
+                .as("The service must return exactly one authority")
+                .singleElement()
+                .as("The response doesn't match the expected response")
+                .isEqualTo(expectedResponse);
 
         verify(authorityRepository, times(1)).findAll();
-        verify(authorityMapper, times(1)).toResponse(eq(entity));
+        verify(authorityMapper, times(1)).toResponse(entity);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.example.pvpeev.electronics_store.auth.service;
 
+import com.example.pvpeev.electronics_store.advice.exception.BadRequestException;
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
 import com.example.pvpeev.electronics_store.auth.dto.AuthorityResponse;
 import com.example.pvpeev.electronics_store.auth.entity.AuthorityEntity;
@@ -8,6 +9,8 @@ import com.example.pvpeev.electronics_store.auth.mapper.AuthorityMapper;
 import com.example.pvpeev.electronics_store.auth.repository.AuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserAuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserRepository;
+import com.example.pvpeev.electronics_store.auth.roles.AuthorityResolver;
+import com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +30,10 @@ public class UserAuthorityService {
 
     private final UserRepository userRepository;
 
+    private final AuthorityResolver authorityResolver;
+
     public List<AuthorityResponse> findAllByUserId(UUID userId) {
-        final boolean exists = userRepository.existsById(userId);
+        final boolean exists = userRepository.findByIdAndEnabledIsTrue(userId).isPresent();
         if (!exists) {
             throw new ResourceNotFoundException();
         }
@@ -48,7 +53,13 @@ public class UserAuthorityService {
     }
 
     public void revokeUserAuthority(UUID userId, Integer authorityId) {
+        final Integer id = authorityResolver.resolveIdByRoleConstant(RoleConstantsp.ROLE_STORE_USER);
+        if (id.equals(authorityId)) {
+            throw new BadRequestException();
+        }
+
         final int i = userAuthorityRepository.deleteByUserIdAndAuthorityId(userId, authorityId);
+
         if (i == 0) {
             throw new ResourceNotFoundException();
         }

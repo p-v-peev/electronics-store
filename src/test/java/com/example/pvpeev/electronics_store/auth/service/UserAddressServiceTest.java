@@ -4,6 +4,7 @@ import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundExc
 import com.example.pvpeev.electronics_store.auth.dto.UserAddressRequest;
 import com.example.pvpeev.electronics_store.auth.dto.UserAddressResponse;
 import com.example.pvpeev.electronics_store.auth.entity.UserAddressEntity;
+import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
 import com.example.pvpeev.electronics_store.auth.mapper.UserAddressMapper;
 import com.example.pvpeev.electronics_store.auth.mapper.UserAddressMapperImpl;
 import com.example.pvpeev.electronics_store.auth.repository.UserAddressRepository;
@@ -16,11 +17,10 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,70 +42,75 @@ public class UserAddressServiceTest {
     public void testFindAllByUserIdWithUnexistingUser() {
         final UUID userId = UUID.randomUUID();
 
-        when(userRepository.existsById(eq(userId))).thenReturn(false);
+        when(userRepository.findByIdAndEnabledIsTrue(userId)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> userAddressService.findAllByUserId(userId),
-                "Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404");
+        final RuntimeException exception = catchRuntimeException(() -> userAddressService.findAllByUserId(userId));
+        assertThat(exception)
+                .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
+                .isInstanceOf(ResourceNotFoundException.class);
 
-        verify(userRepository, times(1)).existsById(eq(userId));
+        verify(userRepository, times(1)).findByIdAndEnabledIsTrue(userId);
     }
 
     @Test
     public void testFindAllByUserId() {
-        final Long addressId = 1L;
-        final UUID userId = UUID.randomUUID();
-        final String address = "Troyan, Bulgaria";
-        final UserAddressEntity entity = new UserAddressEntity(addressId, userId, address);
+        final UserEntity userEntity = new UserEntity(UUID.randomUUID(), "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true);
+        final UserAddressEntity addressEntity = new UserAddressEntity(1L, userEntity.getId(), "Test address");
 
-        when(userRepository.existsById(eq(userId))).thenReturn(true);
-        when(userAddressRepository.findAllByUserId(eq(userId))).thenReturn(List.of(entity));
+        when(userRepository.findByIdAndEnabledIsTrue(addressEntity.getUserId())).thenReturn(Optional.of(userEntity));
+        when(userAddressRepository.findAllByUserId(addressEntity.getUserId())).thenReturn(List.of(addressEntity));
 
-        final List<UserAddressResponse> responses = userAddressService.findAllByUserId(userId);
-        assertEquals(1, responses.size(), "The service must return exactly one address");
-        final UserAddressResponse response = responses.getFirst();
-        final UserAddressResponse expectedResponse = new UserAddressResponse(addressId, userId, address);
-        assertEquals(expectedResponse, response, "The response doesn't match the expected response");
+        final UserAddressResponse expectedResponse = new UserAddressResponse(addressEntity.getId(), addressEntity.getUserId(), addressEntity.getAddress());
+        assertThatList(userAddressService.findAllByUserId(addressEntity.getUserId()))
+                .as("The service must return exactly one address")
+                .singleElement()
+                .as("The response doesn't match the expected response")
+                .isEqualTo(expectedResponse);
 
-        verify(userRepository, times(1)).existsById(eq(userId));
-        verify(userAddressRepository, times(1)).findAllByUserId(eq(userId));
-        verify(userAddressMapper, times(1)).toResponse(eq(entity));
+        verify(userRepository, times(1)).findByIdAndEnabledIsTrue(addressEntity.getUserId());
+        verify(userAddressRepository, times(1)).findAllByUserId(addressEntity.getUserId());
+        verify(userAddressMapper, times(1)).toResponse(addressEntity);
     }
 
     @Test
     public void testCreateAddress() {
-        final Long addressId = 1L;
         final UUID userId = UUID.randomUUID();
-        final String address = "Troyan, Bulgaria";
 
-        // Return the
-        when(userAddressRepository.save(any())).then(invocation -> {
-            final UserAddressEntity argument = invocation.getArgument(0, UserAddressEntity.class);
-            return new UserAddressEntity(addressId, argument.getUserId(), argument.getAddress());
-        });
+        final UserAddressRequest addressRequest = new UserAddressRequest("Test address");
+        final UserAddressEntity toSave = new UserAddressEntity(null, userId, addressRequest.getAddress());
+        final UserAddressEntity savedEntity = new UserAddressEntity(1L, userId, addressRequest.getAddress());
 
-        final UserAddressResponse response = userAddressService.createUserAddress(new UserAddressRequest(address), userId);
-        final UserAddressResponse expectedResponse = new UserAddressResponse(addressId, userId, address);
-        assertEquals(expectedResponse, response, "The response doesn't match the expected response");
+        when(userAddressRepository.save(any(UserAddressEntity.class))).thenReturn(savedEntity);
+
+        final UserAddressResponse expectedResponse = new UserAddressResponse(savedEntity.getId(), userId, addressRequest.getAddress());
+        assertThat(userAddressService.createUserAddress(addressRequest, userId))
+                .as("The response doesn't match the expected response")
+                .isEqualTo(expectedResponse);
+
+        verify(userAddressMapper, times(1)).toEntity(addressRequest, userId);
+        verify(userAddressRepository, times(1)).save(toSave);
     }
 
     @Test
     public void testDeleteUnexistingAddressThrowsException() {
-        when(userAddressRepository.deleteByIdWithCount(eq(1L))).thenReturn(0);
+        final Long id = 1L;
+        when(userAddressRepository.deleteByIdWithCount(id)).thenReturn(0);
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> userAddressService.deleteById(1L),
-                "Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404");
+        final RuntimeException exception = catchRuntimeException(() -> userAddressService.deleteById(id));
+        assertThat(exception)
+                .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
+                .isInstanceOf(ResourceNotFoundException.class);
 
-        verify(userAddressRepository, times(1)).deleteByIdWithCount(eq(1L));
+        verify(userAddressRepository, times(1)).deleteByIdWithCount(id);
     }
 
     @Test
     public void testDeleteAddress() {
-        when(userAddressRepository.deleteByIdWithCount(eq(1L))).thenReturn(1);
+        final Long id = 1L;
+        when(userAddressRepository.deleteByIdWithCount(id)).thenReturn(1);
 
-        userAddressService.deleteById(1L);
+        userAddressService.deleteById(id);
 
-        verify(userAddressRepository, times(1)).deleteByIdWithCount(eq(1L));
+        verify(userAddressRepository, times(1)).deleteByIdWithCount(id);
     }
 }

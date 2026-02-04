@@ -1,15 +1,17 @@
 package com.example.pvpeev.electronics_store.auth.service;
 
+import com.example.pvpeev.electronics_store.advice.exception.BadRequestException;
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
 import com.example.pvpeev.electronics_store.auth.dto.AuthorityResponse;
-import com.example.pvpeev.electronics_store.auth.entity.AuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthorityEntity;
+import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
 import com.example.pvpeev.electronics_store.auth.mapper.AuthorityMapper;
 import com.example.pvpeev.electronics_store.auth.mapper.AuthorityMapperImpl;
 import com.example.pvpeev.electronics_store.auth.repository.AuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserAuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserRepository;
-import com.example.pvpeev.electronics_store.auth.roles.RoleConstants;
+import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityEntityResolver;
+import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,9 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
+import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_USER;
+import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_WAREHOUSE_WORKER;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,80 +41,104 @@ public class UserAuthorityServiceTest {
     private UserAuthorityRepository userAuthorityRepository;
 
     @Spy
+    private TestAuthorityResolver authorityResolver = new TestAuthorityResolver();
+
+    @Spy
     private AuthorityMapper authorityMapper = new AuthorityMapperImpl();
 
     @InjectMocks
     private UserAuthorityService userAuthorityService;
 
+
     @Test
     public void testFindAllByIdUnexistingUserThrowsException() {
         final UUID userId = UUID.randomUUID();
 
-        when(userRepository.existsById(eq(userId))).thenReturn(false);
+        when(userRepository.findByIdAndEnabledIsTrue(userId)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> userAuthorityService.findAllByUserId(userId),
-                "Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404");
+        final RuntimeException exception = catchRuntimeException(() -> userAuthorityService.findAllByUserId(userId));
+        assertThat(exception)
+                .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
+                .isInstanceOf(ResourceNotFoundException.class);
 
-        verify(userRepository, times(1)).existsById(eq(userId));
+        verify(userRepository, times(1)).findByIdAndEnabledIsTrue(userId);
     }
 
     @Test
     public void testFindAllByIdReturnsListOfAuthorityResponse() {
-        final UUID userId = UUID.randomUUID();
-        final String authorityDescription = "Regular store user with no specific authorities";
+        final UserEntity userEntity = new UserEntity(UUID.randomUUID(), "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true);
+        final Integer authorityId = authorityResolver.resolveIdByRoleConstant(ROLE_STORE_USER);
 
-        when(userRepository.existsById(eq(userId))).thenReturn(true);
-        when(userAuthorityRepository.findAllByUserId(eq(userId))).thenReturn(List.of(new UserAuthorityEntity(1L, userId, 1)));
-        when(authorityRepository.findAllById(eq(List.of(1)))).thenReturn(List.of(new AuthorityEntity(1, RoleConstants.ROLE_STORE_USER.getValue(), authorityDescription)));
+        when(userRepository.findByIdAndEnabledIsTrue(userEntity.getId())).thenReturn(Optional.of(userEntity));
+        when(userAuthorityRepository.findAllByUserId(userEntity.getId())).thenReturn(List.of(new UserAuthorityEntity(1L, userEntity.getId(), authorityId)));
+        when(authorityRepository.findAllById(List.of(authorityId))).thenReturn(List.of(TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_USER)));
 
-        final List<AuthorityResponse> responseList = userAuthorityService.findAllByUserId(userId);
-        assertEquals(1, responseList.size(), "The response size must be exactly one");
-        final AuthorityResponse firstResponse = responseList.getFirst();
-        final AuthorityResponse expectedResponse = new AuthorityResponse(1, RoleConstants.ROLE_STORE_USER.getValue(), authorityDescription);
-        assertEquals(expectedResponse, firstResponse, "The response doesn't match the expected response");
+        assertThatList(userAuthorityService.findAllByUserId(userEntity.getId()))
+                .as("The list  size must be exactly one")
+                .singleElement()
+                .as("The response doesn't match the expected response")
+                .isEqualTo(authorityResolver.resolveByRoleConstant(ROLE_STORE_USER));
 
+        verify(userRepository, times(1)).findByIdAndEnabledIsTrue(userEntity.getId());
+        verify(userAuthorityRepository, times(1)).findAllByUserId(userEntity.getId());
+        verify(authorityRepository).findAllById(List.of(authorityId));
     }
 
     @Test
     public void testGrantUserAuthority() {
         final UUID userId = UUID.randomUUID();
-        final String authorityDescription = "Regular store user with no specific authorities";
-        final AuthorityEntity authorityEntity = new AuthorityEntity(1, RoleConstants.ROLE_STORE_USER.getValue(), authorityDescription);
+        final Integer authorityId = authorityResolver.resolveIdByRoleConstant(ROLE_STORE_USER);
 
-        when(authorityRepository.findById(eq(1))).thenReturn(Optional.of(authorityEntity));
+        when(authorityRepository.findById(authorityId)).thenReturn(Optional.of(TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_USER)));
 
-        final AuthorityResponse response = userAuthorityService.grantUserAuthority(userId, 1);
-        final AuthorityResponse expectedResponse = new AuthorityResponse(1, RoleConstants.ROLE_STORE_USER.getValue(), authorityDescription);
-        assertEquals(expectedResponse, response, "The response doesn't match the expected response");
+        final AuthorityResponse expectedResponse = authorityResolver.resolveByRoleConstant(ROLE_STORE_USER);
+        assertThat(userAuthorityService.grantUserAuthority(userId, authorityId))
+                .as("The response doesn't match the expected response")
+                .isEqualTo(expectedResponse);
 
-        verify(userAuthorityRepository, times(1)).save(eq(new UserAuthorityEntity(null, userId, 1)));
-        verify(authorityRepository, times(1)).findById(eq(1));
-        verify(authorityMapper, times(1)).toResponse(eq(authorityEntity));
+        verify(userAuthorityRepository, times(1)).save(new UserAuthorityEntity(null, userId, authorityId));
+        verify(authorityRepository, times(1)).findById(authorityId);
+        verify(authorityMapper, times(1)).toResponse(TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_USER));
+    }
+
+    @Test
+    public void testRevokeRoleUserThrowsException() {
+        final UUID userId = UUID.randomUUID();
+        final Integer authorityId = authorityResolver.resolveIdByRoleConstant(ROLE_STORE_USER);
+
+        final RuntimeException exception = catchRuntimeException(() -> userAuthorityService.revokeUserAuthority(userId, authorityId));
+        assertThat(exception)
+                .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
+                .isInstanceOf(BadRequestException.class);
+
+        verify(userAuthorityRepository, times(0)).deleteByUserIdAndAuthorityId(userId, authorityId);
     }
 
     @Test
     public void testRevokeAuthorityUnexistingUserThrowsException() {
         final UUID userId = UUID.randomUUID();
+        final Integer authorityId = authorityResolver.resolveIdByRoleConstant(ROLE_STORE_WAREHOUSE_WORKER);
 
-        when(userAuthorityRepository.deleteByUserIdAndAuthorityId(eq(userId), eq(1))).thenReturn(0);
+        when(userAuthorityRepository.deleteByUserIdAndAuthorityId(userId, authorityId)).thenReturn(0);
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> userAuthorityService.revokeUserAuthority(userId, 1),
-                "Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404");
+        final RuntimeException exception = catchRuntimeException(() -> userAuthorityService.revokeUserAuthority(userId, authorityId));
+        assertThat(exception)
+                .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
+                .isInstanceOf(ResourceNotFoundException.class);
 
-        verify(userAuthorityRepository, times(1)).deleteByUserIdAndAuthorityId(eq(userId), eq(1));
+        verify(userAuthorityRepository, times(1)).deleteByUserIdAndAuthorityId(userId, authorityId);
     }
 
     @Test
     public void testRevokeAuthority() {
         final UUID userId = UUID.randomUUID();
+        final Integer authorityId = authorityResolver.resolveIdByRoleConstant(ROLE_STORE_WAREHOUSE_WORKER);
 
-        when(userAuthorityRepository.deleteByUserIdAndAuthorityId(eq(userId), eq(1))).thenReturn(1);
+        when(userAuthorityRepository.deleteByUserIdAndAuthorityId(userId, authorityId)).thenReturn(1);
 
-        userAuthorityService.revokeUserAuthority(userId, 1);
+        userAuthorityService.revokeUserAuthority(userId, authorityId);
 
-        verify(userAuthorityRepository, times(1)).deleteByUserIdAndAuthorityId(eq(userId), eq(1));
+        verify(userAuthorityRepository, times(1)).deleteByUserIdAndAuthorityId(userId, authorityId);
     }
 
 }

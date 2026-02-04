@@ -24,7 +24,7 @@ public class UserAddressService {
     private final UserRepository userRepository;
 
     public List<UserAddressResponse> findAllByUserId(UUID userId) {
-        final boolean exists = userRepository.existsById(userId);
+        final boolean exists = userRepository.findByIdAndEnabledIsTrue(userId).isPresent();
         if (!exists) {
             throw new ResourceNotFoundException();
         }

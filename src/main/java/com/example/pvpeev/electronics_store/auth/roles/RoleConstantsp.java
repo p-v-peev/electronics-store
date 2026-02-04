@@ -1,18 +1,17 @@
 package com.example.pvpeev.electronics_store.auth.roles;
 
-public enum RoleConstants {
+import lombok.Getter;
+
+@Getter
+public enum RoleConstantsp {
     ROLE_STORE_USER("ROLE_STORE_USER"),
     ROLE_STORE_WAREHOUSE_WORKER("ROLE_STORE_WAREHOUSE_WORKER"),
     ROLE_STORE_PRODUCT_ADMIN("ROLE_STORE_PRODUCT_ADMIN"),
     ROLE_STORE_AUTHORITY_ADMIN("ROLE_STORE_AUTHORITY_ADMIN");
 
-    private final String value;
+    private final String authority;
 
-    RoleConstants(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return this.value;
+    RoleConstantsp(String authority) {
+        this.authority = authority;
     }
 }

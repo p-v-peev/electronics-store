@@ -1,31 +1,37 @@
 package com.example.pvpeev.electronics_store.auth.controller;
 
 import com.example.pvpeev.electronics_store.auth.dto.*;
+import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
 import com.example.pvpeev.electronics_store.auth.repository.UserAddressRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserAuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserRepository;
+import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityResolver;
+import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityResolverConfiguration;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
-import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
-import java.net.URI;
 import java.util.UUID;
 
-import static com.example.pvpeev.electronics_store.auth.roles.RoleConstants.ROLE_STORE_USER;
+import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_USER;
+import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_WAREHOUSE_WORKER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatList;
 import static org.assertj.core.api.InstanceOfAssertFactories.list;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestAuthorityResolverConfiguration.class)
 public class UserControllerTest {
 
     @Autowired
@@ -41,68 +47,88 @@ public class UserControllerTest {
     private UserAddressRepository userAddressRepository;
 
     @Autowired
+    private TestAuthorityResolver authorityResolver;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
+    @AfterEach
+    public void afterEachTest() {
+        userAddressRepository.deleteAll();
+        userAuthorityRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
     @Test
-    @Transactional
-    public void testCreateDeleteUser() {
+    public void testCreateRetrieveUser() {
         final UserRequest userRequest = getUserRequestInstance();
 
-        final MvcTestResult createUserResponse = mockMvcTester.post()
+        final MvcTestResult response = mockMvcTester.post()
                 .uri(UserController.PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsBytes(userRequest))
                 .exchange();
 
-        assertThat(createUserResponse)
+        assertThat(response)
                 .hasStatus(HttpStatus.CREATED)
                 .containsHeader(HttpHeaders.LOCATION);
 
-        final String location = createUserResponse.getResponse().getHeader(HttpHeaders.LOCATION);
+        final String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
         assertThat(location).isNotNull();
 
         assertThat(mockMvcTester.get()
-                .uri(URI.create(location).getPath()))
+                .uri(location))
                 .hasStatusOk()
                 .bodyJson()
                 .convertTo(UserResponse.class)
-                .satisfies(user -> {
-                    assertThat(userRequest.getEmail()).isEqualTo(user.getEmail());
-                    assertThat(userRequest.getFirstName()).isEqualTo(user.getFirstName());
-                    assertThat(userRequest.getLastName()).isEqualTo(user.getLastName());
-                    assertThat(userRequest.getPhoneNumber()).isEqualTo(user.getPhoneNumber());
+                .satisfies(userResponse -> {
+                    assertThat(userResponse.getId()).isNotNull();
+                    assertThat(userRequest.getEmail()).isEqualTo(userResponse.getEmail());
+                    assertThat(userRequest.getFirstName()).isEqualTo(userResponse.getFirstName());
+                    assertThat(userRequest.getLastName()).isEqualTo(userResponse.getLastName());
+                    assertThat(userRequest.getPhoneNumber()).isEqualTo(userResponse.getPhoneNumber());
                 });
+    }
+
+    @Test
+    public void testCreateDeleteUser() {
+        final UserRequest userRequest = getUserRequestInstance();
+
+        final MvcTestResult response = mockMvcTester.post()
+                .uri(UserController.PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(userRequest))
+                .exchange();
+
+        final String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertThat(location).isNotNull();
 
         assertThat(mockMvcTester.delete()
-                .uri(URI.create(location).getPath())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(userRequest)))
+                .uri(location))
                 .hasStatus(HttpStatus.NO_CONTENT);
 
         assertThat(mockMvcTester.get()
-                .uri(URI.create(location).getPath()))
+                .uri(location))
                 .hasStatus(HttpStatus.NOT_FOUND);
 
         final UUID userId = UUID.fromString(location.substring(location.lastIndexOf('/') + 1));
 
-        assertThat(userRepository.findById(userId)).get().matches(user -> !user.isEnabled());
+        assertThat(userRepository.findById(userId)).get().extracting(UserEntity::isEnabled).isEqualTo(false);
+        assertThat(userRepository.findByIdAndEnabledIsTrue(userId)).isEmpty();
+        assertThat(userRepository.findUserAuthByEmail(userRequest.getEmail())).isEmpty();
         assertThat(userAuthorityRepository.findAllByUserId(userId)).isEmpty();
     }
 
 
     @Test
-    @Transactional
     public void testPostTheSameUserTwiceReturnsConflict() {
         final UserRequest userRequest = getUserRequestInstance();
 
-        final MvcTestResult createUserResponse = mockMvcTester.post()
+        assertThat(mockMvcTester.post()
                 .uri(UserController.PATH)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(userRequest))
-                .exchange();
-
-        final String location = createUserResponse.getResponse().getHeader(HttpHeaders.LOCATION);
-        assertThat(location).isNotNull();
+                .content(objectMapper.writeValueAsBytes(userRequest)))
+                .hasStatus(HttpStatus.CREATED);
 
         assertThat(mockMvcTester.post()
                 .uri(UserController.PATH)
@@ -118,58 +144,113 @@ public class UserControllerTest {
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
 
+
     @Test
-    @Transactional
-    public void testUserAddresses() {
+    public void testAddAddressToUnexistingUserReturnsBadRequest() {
+        final UserAddressRequest addressRequest = new UserAddressRequest("Test address 1");
+        assertThat(mockMvcTester.post()
+                .uri(UserController.PATH + "/" + UUID.randomUUID() + "/addresses")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(addressRequest)))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void testNewUserHasEmptyAddresses() {
         final UserRequest userRequest = getUserRequestInstance();
 
-        final MvcTestResult createUserResponse = mockMvcTester.post()
+        final MvcTestResult response = mockMvcTester.post()
                 .uri(UserController.PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsBytes(userRequest))
                 .exchange();
 
-        final String userLocation = createUserResponse.getResponse().getHeader(HttpHeaders.LOCATION);
-        assertThat(userLocation).isNotNull();
-        final String userPath = URI.create(userLocation).getPath();
+        final String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertThat(location).isNotNull();
 
         assertThat(mockMvcTester.get()
-                .uri(userPath + "/addresses"))
+                .uri(location + "/addresses"))
                 .hasStatusOk()
                 .bodyJson()
                 .convertTo(list(UserAddressResponse.class))
                 .isEmpty();
+    }
+
+    @Test
+    public void testCreateRetrieveUserAddress() {
+        final UserRequest userRequest = getUserRequestInstance();
+
+        final MvcTestResult userResponse = mockMvcTester.post()
+                .uri(UserController.PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(userRequest))
+                .exchange();
+
+        final String userLocation = userResponse.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertThat(userLocation).isNotNull();
 
         final UserAddressRequest addressRequest = new UserAddressRequest("Test address 1");
         final MvcTestResult createAddressResponse = mockMvcTester.post()
-                .uri(userPath + "/addresses")
+                .uri(userLocation + "/addresses")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsBytes(addressRequest))
                 .exchange();
 
         assertThat(createAddressResponse)
                 .hasStatus(HttpStatus.CREATED)
-                .containsHeader(HttpHeaders.LOCATION);
+                .containsHeader(HttpHeaders.LOCATION)
+                .bodyJson()
+                .convertTo(UserAddressResponse.class)
+                .satisfies(response -> {
+                    assertThat(response.getUserId().toString()).isEqualTo(userLocation.substring(userLocation.lastIndexOf('/') + 1));
+                    assertThat(response.getAddress()).isEqualTo(addressRequest.getAddress());
+                });
 
         final String addressLocation = createAddressResponse.getResponse().getHeader(HttpHeaders.LOCATION);
         assertThat(addressLocation).isNotNull();
 
         assertThat(mockMvcTester.get()
-                .uri(URI.create(addressLocation).getPath()))
+                .uri(addressLocation))
                 .hasStatusOk()
                 .bodyJson()
                 .convertTo(list(UserAddressResponse.class))
                 .singleElement()
-                .extracting(UserAddressResponse::getAddress)
-                .isEqualTo(addressRequest.getAddress());
+                .satisfies(response -> {
+                    assertThat(response.getUserId().toString()).isEqualTo(userLocation.substring(userLocation.lastIndexOf('/') + 1));
+                    assertThat(response.getAddress()).isEqualTo(addressRequest.getAddress());
+                });
+    }
+
+    @Test
+    public void testDeleteUserDeletesAllUserAddresses() {
+        final UserRequest userRequest = getUserRequestInstance();
+
+        final MvcTestResult userResponse = mockMvcTester.post()
+                .uri(UserController.PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(userRequest))
+                .exchange();
+
+        final String userLocation = userResponse.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertThat(userLocation).isNotNull();
+
+        final UserAddressRequest addressRequest = new UserAddressRequest("Test address 1");
+        assertThat(mockMvcTester.post()
+                .uri(userLocation + "/addresses")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(addressRequest)))
+                .hasStatus(HttpStatus.CREATED);
 
         assertThat(mockMvcTester.delete()
-                .uri(userPath))
+                .uri(userLocation))
                 .hasStatus(HttpStatus.NO_CONTENT);
+
+        assertThat(mockMvcTester.get()
+                .uri(userLocation + "/addresses"))
+                .hasStatus(HttpStatus.NOT_FOUND);
+
         final UUID userId = UUID.fromString(userLocation.substring(userLocation.lastIndexOf('/') + 1));
-
         assertThat(userAddressRepository.findAllByUserId(userId)).isEmpty();
-
     }
 
     @Test
@@ -180,7 +261,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @Transactional
     public void testAddAuthorityToUnexistingUserReturnsBadRequest() {
         assertThat(mockMvcTester.post()
                 .uri(UserController.PATH + "/" + UUID.randomUUID() + "/authorities/2"))
@@ -188,7 +268,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @Transactional
     public void testDeleteAuthorityToUnexistingUserReturnsNotFound() {
         assertThat(mockMvcTester.delete()
                 .uri(UserController.PATH + "/" + UUID.randomUUID() + "/authorities/2"))
@@ -196,58 +275,178 @@ public class UserControllerTest {
     }
 
     @Test
-    @Transactional
-    public void testUserAuthorities() {
+    public void testNewUserHasTheStoreUserAuthority() {
         final UserRequest userRequest = getUserRequestInstance();
 
-        final MvcTestResult createUserResponse = mockMvcTester.post()
+        final MvcTestResult response = mockMvcTester.post()
                 .uri(UserController.PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsBytes(userRequest))
                 .exchange();
 
-        final String userLocation = createUserResponse.getResponse().getHeader(HttpHeaders.LOCATION);
+        final String userLocation = response.getResponse().getHeader(HttpHeaders.LOCATION);
         assertThat(userLocation).isNotNull();
-        final String userPath = URI.create(userLocation).getPath();
 
+        final AuthorityResponse expectedResponse = authorityResolver.resolveByRoleConstant(ROLE_STORE_USER);
         assertThat(mockMvcTester.get()
-                .uri(userPath + "/authorities"))
+                .uri(userLocation + "/authorities"))
                 .hasStatusOk()
                 .bodyJson()
                 .convertTo(list(AuthorityResponse.class))
                 .singleElement()
-                .extracting(AuthorityResponse::getName)
-                .isEqualTo(ROLE_STORE_USER.getValue());
+                .isEqualTo(expectedResponse);
 
-        assertThat(mockMvcTester.post()
-                .uri(userPath + "/authorities/2"))
+        final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
+        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
+    }
+
+    @Test
+    public void testCreateRetrieveUserAuthorities() {
+        final UserRequest userRequest = getUserRequestInstance();
+
+        final MvcTestResult userResponse = mockMvcTester.post()
+                .uri(UserController.PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(userRequest))
+                .exchange();
+
+        final String userLocation = userResponse.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertThat(userLocation).isNotNull();
+
+        final AuthorityResponse warehouseWorker = authorityResolver.resolveByRoleConstant(ROLE_STORE_WAREHOUSE_WORKER);
+
+        final MvcTestResult createAuthorityResponse = mockMvcTester.post()
+                .uri(userLocation + "/authorities/" + warehouseWorker.getId())
+                .exchange();
+
+        assertThat(createAuthorityResponse)
                 .hasStatus(HttpStatus.CREATED)
-                .containsHeader(HttpHeaders.LOCATION);
+                .containsHeader(HttpHeaders.LOCATION)
+                .bodyJson()
+                .convertTo(AuthorityResponse.class)
+                .isEqualTo(warehouseWorker);
+
+        final AuthorityResponse storeUser = authorityResolver.resolveByRoleConstant(ROLE_STORE_USER);
 
         assertThat(mockMvcTester.get()
-                .uri(userPath + "/authorities"))
+                .uri(userLocation + "/authorities"))
                 .hasStatusOk()
                 .bodyJson()
                 .convertTo(list(AuthorityResponse.class))
-                .hasSize(2);
+                .hasSize(2)
+                .containsExactlyInAnyOrder(warehouseWorker, storeUser);
+
+        final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
+        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(2);
+    }
+
+    @Test
+    public void testDeleteUserAuthority() {
+        final UserRequest userRequest = getUserRequestInstance();
+
+        final MvcTestResult userResponse = mockMvcTester.post()
+                .uri(UserController.PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(userRequest))
+                .exchange();
+
+        final String userLocation = userResponse.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertThat(userLocation).isNotNull();
+
+        assertThat(mockMvcTester.post()
+                .uri(userLocation + "/authorities/2"))
+                .hasStatus(HttpStatus.CREATED);
 
         assertThat(mockMvcTester.delete()
-                .uri(userPath + "/authorities/2"))
+                .uri(userLocation + "/authorities/2"))
                 .hasStatus(HttpStatus.NO_CONTENT);
 
         assertThat(mockMvcTester.get()
-                .uri(userPath + "/authorities"))
+                .uri(userLocation + "/authorities"))
                 .hasStatusOk()
                 .bodyJson()
                 .convertTo(list(AuthorityResponse.class))
                 .hasSize(1);
 
-        assertThat(mockMvcTester.delete()
-                .uri(userPath))
-                .hasStatus(HttpStatus.NO_CONTENT);
-        final UUID userId = UUID.fromString(userLocation.substring(userLocation.lastIndexOf('/') + 1));
+        final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
+        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
+    }
 
-        assertThat(userAuthorityRepository.findAllByUserId(userId)).isEmpty();
+    @Test
+    public void testDeleteRoleStoreUserAuthorityReturnsBadRequest() {
+        final UserRequest userRequest = getUserRequestInstance();
+
+        final MvcTestResult userResponse = mockMvcTester.post()
+                .uri(UserController.PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(userRequest))
+                .exchange();
+
+        final String userLocation = userResponse.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertThat(userLocation).isNotNull();
+
+        assertThat(mockMvcTester.delete()
+                .uri(userLocation + "/authorities/1"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+
+        final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
+        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
+    }
+
+    @Test
+    public void testDeleteUserDeletesAllUserAuthorities() {
+        final UserRequest userRequest = getUserRequestInstance();
+
+        final MvcTestResult userResponse = mockMvcTester.post()
+                .uri(UserController.PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(userRequest))
+                .exchange();
+
+        final String userLocation = userResponse.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertThat(userLocation).isNotNull();
+
+        assertThat(mockMvcTester.post()
+                .uri(userLocation + "/authorities/2"))
+                .hasStatus(HttpStatus.CREATED);
+
+        assertThat(mockMvcTester.delete()
+                .uri(userLocation))
+                .hasStatus(HttpStatus.NO_CONTENT);
+
+        assertThat(mockMvcTester.get()
+                .uri(userLocation + "/authorities"))
+                .hasStatus(HttpStatus.NOT_FOUND);
+
+        final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
+        assertThat(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).isEmpty();
+    }
+
+    @Test
+    public void testGrantUserUnexistingAuthorityReturnsBadRequest() {
+        final UserRequest userRequest = getUserRequestInstance();
+
+        final MvcTestResult userResponse = mockMvcTester.post()
+                .uri(UserController.PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(userRequest))
+                .exchange();
+
+        final String userLocation = userResponse.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertThat(userLocation).isNotNull();
+
+        assertThat(mockMvcTester.post()
+                .uri(userLocation + "/authorities/-1"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+
+        final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
+        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId)))
+                .as("The user must have only the ROLE_STORE_USER")
+                .singleElement()
+                .satisfies(entity -> {
+                    assertThat(entity.getUserId().toString()).isEqualTo(userId);
+                    assertThat(entity.getAuthorityId()).isEqualTo(authorityResolver.resolveIdByRoleConstant(ROLE_STORE_USER));
+                });
     }
 
     private static @NotNull UserRequest getUserRequestInstance() {

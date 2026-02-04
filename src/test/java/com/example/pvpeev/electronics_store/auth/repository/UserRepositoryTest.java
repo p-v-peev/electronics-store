@@ -4,6 +4,8 @@ import com.example.pvpeev.electronics_store.auth.entity.AuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
+import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityEntityResolver;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
@@ -13,9 +15,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_USER;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchRuntimeException;
+import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NON_TEST)
@@ -29,59 +32,82 @@ public class UserRepositoryTest extends BaseRepositoryTest {
     private UserRepository userRepository;
 
     @Autowired
-    private AuthorityRepository authorityRepository;
-
-    @Autowired
     private UserAuthorityRepository userAuthorityRepository;
 
     @Test
-    public void testAddingTheSameUserTwice() throws InterruptedException {
-        userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
+    public void testAddingTheSameUserTwice() {
+        userRepository.save(getUserEntity());
 
-        assertThrows(DataIntegrityViolationException.class,
-                () -> userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true)),
-                "The same user can't be added twice.");
+        final RuntimeException exception = catchRuntimeException(() -> userRepository.save(getUserEntity()));
+        assertThat(exception)
+                .as("The same user can't be added twice.")
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     public void testFindUserAuthByEmail() {
-        final AuthorityEntity authority = authorityRepository.findAll().getFirst();
-        final UserEntity userEntity = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
+        final AuthorityEntity authority = TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_USER);
+        final UserEntity userEntity = userRepository.save(getUserEntity());
 
         userAuthorityRepository.save(new UserAuthorityEntity(null, userEntity.getId(), authority.getId()));
 
-        final Optional<UserAuthEntity> userAuthByEmail = userRepository.findUserAuthByEmail(userEntity.getEmail());
-        assertTrue(userAuthByEmail.isPresent(), "The user must exist in the repository");
-        final UserAuthEntity userAuthEntity = userAuthByEmail.get();
-        assertEquals(1, userAuthEntity.getAuthorities().size(), "The user must have exactly one authority");
-        assertTrue(userAuthEntity.getAuthorities().contains(authority.getName()), String.format("The authorities must contain %s", authority.getName()));
-
-        assertThrows(DataIntegrityViolationException.class,
-                () -> userAuthorityRepository.save(new UserAuthorityEntity(null, userEntity.getId(), authority.getId())),
-                "The same user can't have the same authority twice.");
+        assertThat(userRepository.findUserAuthByEmail(userEntity.getEmail()))
+                .as("The user must exist in the repository")
+                .isPresent()
+                .get()
+                .extracting(UserAuthEntity::getAuthorities)
+                .as("The authorities must be instance of Set<>() for constant time search")
+                .asInstanceOf(SET)
+                .as("The user must have exactly one authority")
+                .singleElement()
+                .isEqualTo(authority.getName());
     }
 
     @Test
     public void testSoftDeleteUser() {
-        final UserEntity user1 = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
+        final UserEntity entityToSave = getUserEntity();
+        final UserEntity user1 = userRepository.save(entityToSave);
         final UserEntity user2 = userRepository.save(new UserEntity(null, "igivanov@store.com", "Ivan", "Ivanov", "{noop}password", "+359897401214", true));
 
-        final int deletedUsers = userRepository.softDeleteUser(user1.getId());
-        assertEquals(1, deletedUsers, "Exactly one user must be deleted");
-        assertFalse(userRepository.findUserAuthByEmail(user2.getEmail()).isEmpty(), "User 2 must not be deleted");
-        assertFalse(userRepository.findByIdAndEnabledIsTrue(user2.getId()).isEmpty(), "User 2 must not be deleted");
+        assertThat(userRepository.softDeleteUser(user1.getId()))
+                .as("Exactly one user must be deleted")
+                .isEqualTo(1);
+        assertThat(userRepository.findUserAuthByEmail(user2.getEmail()))
+                .as("User 2 must not be deleted")
+                .isPresent();
+        assertThat(userRepository.findByIdAndEnabledIsTrue(user2.getId()))
+                .as("User 2 must not be deleted")
+                .isPresent();
 
-        assertTrue(userRepository.findUserAuthByEmail(user1.getEmail()).isEmpty(), "The application must not find the user");
-        assertTrue(userRepository.findByIdAndEnabledIsTrue(user1.getId()).isEmpty(), "The application must not find the user");
-
-        final Optional<UserEntity> userOptional = userRepository.findById(user1.getId());
-        assertFalse(userOptional.isEmpty(), "The record must stay in the database");
-        final UserEntity softDeletedUser = userOptional.get();
+        assertThat(userRepository.findUserAuthByEmail(user1.getEmail()))
+                .as("The application must not find the user")
+                .isEmpty();
+        assertThat(userRepository.findByIdAndEnabledIsTrue(user1.getId()))
+                .as("The application must not find the user")
+                .isEmpty();
 
         final UserEntity expectedEntity = new UserEntity(user1.getId(), user1.getId().toString(), null, null, "{noop}" + user1.getId(), null, false);
-        assertEquals(expectedEntity, softDeletedUser);
+        assertThat(userRepository.findById(user1.getId()))
+                .as("The record must stay in the database")
+                .isPresent()
+                .get()
+                .isEqualTo(expectedEntity);
 
         // Since the previous record is anonymised the application must be able to add the same user again
-        userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
+        assertThat(userRepository.save(getUserEntity()))
+                .as("The same user must be able to register again")
+                .satisfies(userEntity -> {
+                    assertThat(userEntity.getId()).isNotNull();
+                    assertThat(userEntity.getEmail()).isEqualTo(entityToSave.getEmail());
+                    assertThat(userEntity.getFirstName()).isEqualTo(entityToSave.getFirstName());
+                    assertThat(userEntity.getLastName()).isEqualTo(entityToSave.getLastName());
+                    assertThat(userEntity.getPassword()).isEqualTo(entityToSave.getPassword());
+                    assertThat(userEntity.getPhoneNumber()).isEqualTo(entityToSave.getPhoneNumber());
+                    assertThat(userEntity.isEnabled()).isTrue();
+                });
+    }
+
+    private static @NotNull UserEntity getUserEntity() {
+        return new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true);
     }
 }

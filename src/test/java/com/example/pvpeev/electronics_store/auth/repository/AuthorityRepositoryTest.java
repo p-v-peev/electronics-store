@@ -1,6 +1,6 @@
 package com.example.pvpeev.electronics_store.auth.repository;
 
-import com.example.pvpeev.electronics_store.auth.entity.AuthorityEntity;
+import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityEntityResolver;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
@@ -9,11 +9,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.HashSet;
-
-import static com.example.pvpeev.electronics_store.auth.roles.RoleConstants.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.*;
+import static org.assertj.core.api.Assertions.assertThatList;
 
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NON_TEST)
@@ -26,22 +23,24 @@ public class AuthorityRepositoryTest extends BaseRepositoryTest {
     @Autowired
     private AuthorityRepository authorityRepository;
 
+
     @Test
-    public void testLiquibaseInsertsTheDefaultAuthorities() {
-        final HashSet<AuthorityEntity> authorities = new HashSet<>(authorityRepository.findAll());
-        assertEquals(4, authorities.size(), "Exactly 4 authorities must exist by default");
-        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_USER.getValue())),
-                String.format("The default %s roles is not in the database", ROLE_STORE_USER.getValue())
-        );
-        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_WAREHOUSE_WORKER.getValue())),
-                String.format("The default %s roles is not in the database", ROLE_STORE_WAREHOUSE_WORKER.getValue())
-        );
-        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_PRODUCT_ADMIN.getValue())),
-                String.format("The default %s roles is not in the database", ROLE_STORE_PRODUCT_ADMIN.getValue())
-        );
-        assertTrue(authorities.stream().anyMatch(ae -> ae.getName().equals(ROLE_STORE_AUTHORITY_ADMIN.getValue())),
-                String.format("The default %s roles is not in the database", ROLE_STORE_AUTHORITY_ADMIN.getValue())
-        );
+    public void testTheDefaultAuthoritiesExist() {
+        assertThatList(authorityRepository.findAll())
+                .as("All 4 authorities must be populated in the database.")
+                .hasSize(4)
+                .as("The following authorities must exist %s, %s, %s, %s",
+                        ROLE_STORE_USER.getAuthority(),
+                        ROLE_STORE_WAREHOUSE_WORKER.getAuthority(),
+                        ROLE_STORE_PRODUCT_ADMIN.getAuthority(),
+                        ROLE_STORE_AUTHORITY_ADMIN.getAuthority()
+                )
+                .containsExactlyInAnyOrder(
+                        TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_USER),
+                        TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_WAREHOUSE_WORKER),
+                        TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_PRODUCT_ADMIN),
+                        TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_AUTHORITY_ADMIN)
+                );
     }
 
 }
