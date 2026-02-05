@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface ProductCategoryRepository extends ListCrudRepository<ProductCategoryEntity, Integer> {
 
     @Modifying
-    @Query("DELETE FROM user_address WHERE id = :id")
+    @Query("DELETE FROM product_category WHERE id = :id")
     int deleteByIdWithCount(Integer id);
 
     Optional<ProductCategoryEntity> findByPath(String path);

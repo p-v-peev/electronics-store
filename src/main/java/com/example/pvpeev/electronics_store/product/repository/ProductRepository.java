@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface ProductRepository extends CrudRepository<ProductEntity, UUID>, ListPagingAndSortingRepository<ProductEntity, UUID> {
 
     @Modifying
-    @Query("DELETE FROM user_address WHERE id = :id")
+    @Query("DELETE FROM product WHERE id = :id")
     int deleteByIdWithCount(Integer id);
 
     Page<ProductEntity> findAllByProductCategoryId(Integer productCategoryId, Pageable pageable);
