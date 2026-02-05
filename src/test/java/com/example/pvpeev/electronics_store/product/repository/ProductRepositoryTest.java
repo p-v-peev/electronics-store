@@ -32,7 +32,7 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
     public void testExistsByProductCategoryReturnsTrue() {
         final ProductBrandEntity productBrandEntity = productBrandRepository.save(getProductBrandEntity());
         final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
-        productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "https://fake-url"));
+        productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
 
         assertThat(productRepository.existsByProductCategoryId(productCategoryEntity.getId()))
                 .as("The result must be true, because of the product inserted above")
@@ -67,8 +67,8 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
     public void findAllByProductCategoryIdPaginationSortWorks() {
         final ProductBrandEntity productBrandEntity = productBrandRepository.save(getProductBrandEntity());
         final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
-        final ProductEntity productEntity1 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "https://fake-url1"));
-        final ProductEntity productEntity2 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 17", "https://fake-url2"));
+        final ProductEntity productEntity1 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
+        final ProductEntity productEntity2 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 17", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a2"));
 
         // iPhone 16 is less than iPhone 17
         final Sort.TypedSort<String> sort = Sort.sort(ProductEntity.class).by(ProductEntity::getName);
@@ -91,8 +91,8 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
     public void findAllByProductCategoryIdPaginationWorks() {
         final ProductBrandEntity productBrandEntity = productBrandRepository.save(getProductBrandEntity());
         final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
-        final ProductEntity productEntity1 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "https://fake-url1"));
-        final ProductEntity productEntity2 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 17", "https://fake-url2"));
+        final ProductEntity productEntity1 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
+        final ProductEntity productEntity2 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 17", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a2"));
 
         final Sort sort = Sort.sort(ProductEntity.class).by(ProductEntity::getName).ascending();
 
@@ -127,8 +127,8 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
     public void testDeleteByIdReturnsOne() {
         final ProductBrandEntity productBrandEntity = productBrandRepository.save(getProductBrandEntity());
         final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
-        final ProductEntity productEntity1 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "https://fake-url1"));
-        final ProductEntity productEntity2 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 17", "https://fake-url2"));
+        final ProductEntity productEntity1 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
+        final ProductEntity productEntity2 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 17", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a2"));
 
         assertThat(productRepository.deleteByIdWithCount(productEntity1.getId()))
                 .as("Exactly one item must be deleted")
@@ -147,7 +147,7 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
     public void testAddProductInUnexistingCategoryThrowsException() {
         final ProductBrandEntity productBrandEntity = productBrandRepository.save(getProductBrandEntity());
 
-        final RuntimeException exception = catchRuntimeException(() -> productRepository.save(getProductEntity(1, productBrandEntity.getId(), "iPhone 16", "https://fake-url1")));
+        final RuntimeException exception = catchRuntimeException(() -> productRepository.save(getProductEntity(1, productBrandEntity.getId(), "iPhone 16", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1")));
 
         assertThat(exception)
                 .as("The product must be from existing category")
@@ -158,7 +158,7 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
     public void testAddProductWithUnexistingBrandThrowsException() {
         final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
 
-        final RuntimeException exception = catchRuntimeException(() -> productRepository.save(getProductEntity(productCategoryEntity.getId(), 1, "iPhone 16", "https://fake-url1")));
+        final RuntimeException exception = catchRuntimeException(() -> productRepository.save(getProductEntity(productCategoryEntity.getId(), 1, "iPhone 16", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1")));
 
         assertThat(exception)
                 .as("The product must be from existing brand")

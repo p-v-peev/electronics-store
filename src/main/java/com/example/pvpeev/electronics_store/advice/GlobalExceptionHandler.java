@@ -1,9 +1,6 @@
 package com.example.pvpeev.electronics_store.advice;
 
-import com.example.pvpeev.electronics_store.advice.exception.BadRequestException;
-import com.example.pvpeev.electronics_store.advice.exception.FileUploadException;
-import com.example.pvpeev.electronics_store.advice.exception.ResourceConflictExceptionException;
-import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
+import com.example.pvpeev.electronics_store.advice.exception.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +24,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(FileUploadException.class)
     public ResponseEntity<Void> handleFileUploadError(FileUploadException exception) {
+        return ResponseEntity.internalServerError().build();
+    }
+
+    @ExceptionHandler(FileDeleteException.class)
+    public ResponseEntity<Void> handleFileDeleteException() {
         return ResponseEntity.internalServerError().build();
     }
 

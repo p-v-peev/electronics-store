@@ -36,22 +36,26 @@ public class ProductImageService {
         return productImageRepository.findAllByProductId(id).stream().map(productImageMapper::toResponse).toList();
     }
 
-    public ProductImageResponse create(ProductImageRequest request, UUID productId) {
+    public ProductImageResponse create(ProductImageRequest imageRequest, UUID productId) {
         final UUID key = UUID.randomUUID();
         final String imageUrl = blobStorageService.getFileUrl(PRODUCT_IMAGES_STORAGE.getValue(), key);
-        final ProductImageEntity entity = productImageMapper.toEntity(request, productId, imageUrl);
-        final ProductImageEntity save = productImageRepository.save(entity);
+        final ProductImageEntity savedEntity = productImageRepository.save(productImageMapper.toEntity(imageRequest, productId, imageUrl));
         try {
-            blobStorageService.uploadFile(PRODUCT_IMAGES_STORAGE.getValue(), key, request.getImage());
+            blobStorageService.uploadFile(PRODUCT_IMAGES_STORAGE.getValue(), key, imageRequest.getImage());
         } catch (Exception e) {
-            productImageRepository.deleteById(save.getId());
+            productImageRepository.deleteById(savedEntity.getId());
             throw e;
         }
-        return productImageMapper.toResponse(save);
+        return productImageMapper.toResponse(savedEntity);
     }
 
-    public void delete(UUID id) {
-        int result = productImageRepository.deleteByIdWithCount(id);
+    public void delete(UUID imageId) {
+        productImageRepository.findById(imageId)
+                .map(ProductImageEntity::getImageUrl)
+                .map(url -> url.substring(url.lastIndexOf('/') + 1))
+                .ifPresent(key -> blobStorageService.delete(PRODUCT_IMAGES_STORAGE.getValue(), key));
+
+        int result = productImageRepository.deleteByIdWithCount(imageId);
         if (result == 0) {
             throw new ResourceNotFoundException();
         }

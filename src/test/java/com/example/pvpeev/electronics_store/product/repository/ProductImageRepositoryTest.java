@@ -42,7 +42,7 @@ public class ProductImageRepositoryTest extends BaseRepositoryTest {
         final ProductBrandEntity productBrandEntity = productBrandRepository.save(getProductBrandEntity());
         final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
         final ProductEntity productEntity = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity));
-        final ProductImageEntity productImageEntity = productImageRepository.save(getProductImageEntity(productEntity, "https://fake-url"));
+        final ProductImageEntity productImageEntity = productImageRepository.save(getProductImageEntity(productEntity, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
 
         assertThatList(productImageRepository.findAllByProductId(productEntity.getId()))
                 .as("The repository must return list with exactly one entity")
@@ -61,8 +61,8 @@ public class ProductImageRepositoryTest extends BaseRepositoryTest {
         final ProductBrandEntity productBrandEntity = productBrandRepository.save(getProductBrandEntity());
         final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
         final ProductEntity productEntity = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity));
-        final ProductImageEntity productImageEntity1 = productImageRepository.save(getProductImageEntity(productEntity, "https://fake-url1"));
-        final ProductImageEntity productImageEntity2 = productImageRepository.save(getProductImageEntity(productEntity, "https://fake-url2"));
+        final ProductImageEntity productImageEntity1 = productImageRepository.save(getProductImageEntity(productEntity, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
+        final ProductImageEntity productImageEntity2 = productImageRepository.save(getProductImageEntity(productEntity, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a2"));
 
         assertThat(productImageRepository.deleteByIdWithCount(productImageEntity1.getId()))
                 .as("Exactly one item must be deleted")
@@ -78,13 +78,13 @@ public class ProductImageRepositoryTest extends BaseRepositoryTest {
     }
 
     @Test
-    public void testAddTheSameImageForSingleProductFails() {
+    public void testAddTheSameImageForSingleProductThrowsException() {
         final ProductBrandEntity productBrandEntity = productBrandRepository.save(getProductBrandEntity());
         final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
         final ProductEntity productEntity = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity));
 
-        productImageRepository.save(getProductImageEntity(productEntity, "https://fake-url"));
-        final RuntimeException exception = catchRuntimeException(() -> productImageRepository.save(getProductImageEntity(productEntity, "https://fake-url")));
+        productImageRepository.save(getProductImageEntity(productEntity, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
+        final RuntimeException exception = catchRuntimeException(() -> productImageRepository.save(getProductImageEntity(productEntity, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1")));
 
         assertThat(exception)
                 .as("One product can't have the same image twice")
@@ -92,12 +92,25 @@ public class ProductImageRepositoryTest extends BaseRepositoryTest {
 
     }
 
+    @Test
+    public void testAddImageForUnexistingProductThrowsException() {
+        final RuntimeException exception = catchRuntimeException(() -> productImageRepository.save(getProductImageEntity(UUID.randomUUID(), "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1")));
+
+        assertThat(exception)
+                .as("Images can't be added for unexisting products")
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
     private static @NotNull ProductImageEntity getProductImageEntity(ProductEntity productEntity, String url) {
-        return new ProductImageEntity(null, productEntity.getId(), url);
+        return getProductImageEntity(productEntity.getId(), url);
+    }
+
+    private static @NotNull ProductImageEntity getProductImageEntity(UUID productId, String url) {
+        return new ProductImageEntity(null, productId, url);
     }
 
     private static @NotNull ProductEntity getProductEntity(ProductCategoryEntity productCategoryEntity, ProductBrandEntity productBrandEntity) {
-        return new ProductEntity(null, productCategoryEntity.getId(), productBrandEntity.getId(), "iPhone 17", "iPhone 17", 1200, 10, "https://fake-url");
+        return new ProductEntity(null, productCategoryEntity.getId(), productBrandEntity.getId(), "iPhone 17", "iPhone 17", 1200, 10, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1");
     }
 
     private static @NotNull ProductCategoryEntity getProductCategoryEntity() {
