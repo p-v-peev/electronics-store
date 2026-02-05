@@ -23,8 +23,8 @@ public class ProductBrandService {
         return productBrandRepository.findAll().stream().map(productBrandMapper::toResponse).toList();
     }
 
-    public void create(ProductBrandRequest request) {
+    public ProductBrandResponse create(ProductBrandRequest request) {
         final ProductBrandEntity entity = productBrandMapper.toEntity(request);
-        productBrandRepository.save(entity);
+        return productBrandMapper.toResponse(productBrandRepository.save(entity));
     }
 }

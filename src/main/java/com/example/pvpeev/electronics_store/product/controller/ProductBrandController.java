@@ -28,8 +28,8 @@ public class ProductBrandController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> create(@RequestBody ProductBrandRequest request, UriComponentsBuilder ucb) {
-        productBrandService.create(request);
-        return ResponseEntity.created(ucb.path(PATH).build().toUri()).build();
+    public ResponseEntity<ProductBrandResponse> create(@RequestBody ProductBrandRequest request, UriComponentsBuilder ucb) {
+        final ProductBrandResponse response = productBrandService.create(request);
+        return ResponseEntity.created(ucb.path(PATH).build().toUri()).body(response);
     }
 }
