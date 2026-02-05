@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThatList;
 
 public class ProductCategoryRepositoryTest extends BaseRepositoryTest {
 
@@ -34,7 +35,7 @@ public class ProductCategoryRepositoryTest extends BaseRepositoryTest {
 
         final RuntimeException exception = catchRuntimeException(() -> productCategoryRepository.save(new ProductCategoryEntity(null, path, "Laptops", "Smartphones description")));
         assertThat(exception)
-                .as("Second category with the same name can't be added twice")
+                .as("Second category with the same path can't be added twice")
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -55,6 +56,30 @@ public class ProductCategoryRepositoryTest extends BaseRepositoryTest {
                 .get()
                 .as("The result must be equal to the saved entity")
                 .isEqualTo(save);
+    }
+
+    @Test
+    public void testDeleteByUnexistingIdReturnsZero() {
+        assertThat(productCategoryRepository.deleteByIdWithCount(1))
+                .isEqualTo(0);
+    }
+
+    @Test
+    public void testDeleteByIdReturnsOne() {
+        final ProductCategoryEntity smartphones = productCategoryRepository.save(new ProductCategoryEntity(null, "smartphones", "Smartphones", "Smartphones description"));
+        final ProductCategoryEntity laptops = productCategoryRepository.save(new ProductCategoryEntity(null, "laptops", "Laptops", "Laptops description"));
+
+        assertThat(productCategoryRepository.deleteByIdWithCount(smartphones.getId()))
+                .as("Exactly one item must be deleted")
+                .isEqualTo(1);
+
+        assertThat(productCategoryRepository.deleteByIdWithCount(laptops.getId()))
+                .as("Exactly one item must be deleted")
+                .isEqualTo(1);
+
+        assertThatList(productCategoryRepository.findAll())
+                .as("The list must be empty")
+                .isEmpty();
     }
 
 }

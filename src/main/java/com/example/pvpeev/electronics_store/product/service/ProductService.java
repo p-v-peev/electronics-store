@@ -60,7 +60,7 @@ public class ProductService {
         }
     }
 
-    public void deleteById(Integer id) {
+    public void deleteById(UUID id) {
         final int result = productRepository.deleteByIdWithCount(id);
         if (result == 0) {
             throw new ResourceNotFoundException();

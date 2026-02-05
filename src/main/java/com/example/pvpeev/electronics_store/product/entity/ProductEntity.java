@@ -1,5 +1,6 @@
 package com.example.pvpeev.electronics_store.product.entity;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 @Table(name = "product")
 @RequiredArgsConstructor
+@EqualsAndHashCode
 @Getter
 public class ProductEntity {
 

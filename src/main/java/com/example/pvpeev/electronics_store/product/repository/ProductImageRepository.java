@@ -3,7 +3,6 @@ package com.example.pvpeev.electronics_store.product.repository;
 import com.example.pvpeev.electronics_store.product.entity.ProductImageEntity;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 

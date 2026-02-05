@@ -13,7 +13,7 @@ public class BaseRepositoryTest {
     public static final String POSTGRES_VERSION = "postgres:18.1";
 
     @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18.1");
+    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_VERSION);
 
     static {
         postgres.start();

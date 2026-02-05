@@ -5,18 +5,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.ListPagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 @Repository
-public interface ProductRepository extends CrudRepository<ProductEntity, UUID>, ListPagingAndSortingRepository<ProductEntity, UUID> {
+public interface ProductRepository extends ListCrudRepository<ProductEntity, UUID>, ListPagingAndSortingRepository<ProductEntity, UUID> {
 
     @Modifying
     @Query("DELETE FROM product WHERE id = :id")
-    int deleteByIdWithCount(Integer id);
+    int deleteByIdWithCount(UUID id);
 
     Page<ProductEntity> findAllByProductCategoryId(Integer productCategoryId, Pageable pageable);
 

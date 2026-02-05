@@ -38,7 +38,7 @@ public class ProductController {
 
     // TODO handle delete
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteByID(@PathVariable("id") Integer id) {
+    public ResponseEntity<Void> deleteByID(@PathVariable("id") UUID id) {
         productService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
