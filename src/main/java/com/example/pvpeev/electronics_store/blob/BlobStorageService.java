@@ -36,13 +36,4 @@ public class BlobStorageService {
             throw new FileUploadException();
         }
     }
-
-//    public void deleteFile(String bucketName, String key) {
-//        final DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-//                .bucket(bucketName)
-//                .key(key)
-//                .build();
-//
-//        s3Client.deleteObject(deleteObjectRequest);
-//    }
 }
