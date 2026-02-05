@@ -37,15 +37,17 @@ public class ProductImageService {
     }
 
     public ProductImageResponse create(ProductImageRequest request, UUID productId) {
-        final String imageUrl = blobStorageService.uploadFile(PRODUCT_IMAGES_STORAGE.getValue(), request.getImage());
+        final UUID key = UUID.randomUUID();
+        final String imageUrl = blobStorageService.getFileUrl(PRODUCT_IMAGES_STORAGE.getValue(), key);
+        final ProductImageEntity entity = productImageMapper.toEntity(request, productId, imageUrl);
+        final ProductImageEntity save = productImageRepository.save(entity);
         try {
-            final ProductImageEntity entity = productImageMapper.toEntity(request, productId, imageUrl);
-            final ProductImageEntity save = productImageRepository.save(entity);
-            return productImageMapper.toResponse(save);
+            blobStorageService.uploadFile(PRODUCT_IMAGES_STORAGE.getValue(), key, request.getImage());
         } catch (Exception e) {
-            blobStorageService.deleteFile(PRODUCT_IMAGES_STORAGE.getValue(), imageUrl.substring(imageUrl.lastIndexOf("/") + 1));
+            productImageRepository.deleteById(save.getId());
             throw e;
         }
+        return productImageMapper.toResponse(save);
     }
 
     public void delete(UUID id) {

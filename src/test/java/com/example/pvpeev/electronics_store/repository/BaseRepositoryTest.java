@@ -1,4 +1,4 @@
-package com.example.pvpeev.electronics_store.auth.repository;
+package com.example.pvpeev.electronics_store.repository;
 
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 

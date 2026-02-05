@@ -5,6 +5,7 @@ import com.example.pvpeev.electronics_store.auth.entity.UserAuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
 import com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp;
 import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityEntityResolver;
+import com.example.pvpeev.electronics_store.repository.BaseRepositoryTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NON_TEST)
-public class UserAtuhorityRepositoryTest extends BaseRepositoryTest {
+public class UserAuthorityRepositoryTest extends BaseRepositoryTest {
 
     @Container
     @ServiceConnection

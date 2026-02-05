@@ -1,6 +1,7 @@
 package com.example.pvpeev.electronics_store.auth.repository;
 
 import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityEntityResolver;
+import com.example.pvpeev.electronics_store.repository.BaseRepositoryTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
@@ -10,6 +11,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatList;
 
 @Testcontainers
@@ -41,6 +43,16 @@ public class AuthorityRepositoryTest extends BaseRepositoryTest {
                         TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_PRODUCT_ADMIN),
                         TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_AUTHORITY_ADMIN)
                 );
+    }
+
+    @Test
+    public void testFindByName() {
+        assertThat(authorityRepository.findByName(ROLE_STORE_USER.getAuthority()))
+                .isNotEmpty()
+                .as("The repository must find the entity")
+                .get()
+                .as("The result must be equal to the expected authority entity")
+                .isEqualTo(TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_USER));
     }
 
 }

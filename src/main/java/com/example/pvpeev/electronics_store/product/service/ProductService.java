@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.example.pvpeev.electronics_store.TextConstants.PRODUCT_THUMBNAILS_STORAGE;
 
@@ -46,13 +47,15 @@ public class ProductService {
         if (entity.isEmpty()) {
             throw new BadRequestException();
         }
-        final String imageUrl = blobStorageService.uploadFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), request.getThumbnailImage());
+        final UUID key = UUID.randomUUID();
+        final String imageUrl = blobStorageService.getFileUrl(PRODUCT_THUMBNAILS_STORAGE.getValue(), key);
+        final ProductEntity productEntity = productMapper.toEntity(request, entity.get().getId(), imageUrl);
+        final ProductEntity save = productRepository.save(productEntity);
 
         try {
-            final ProductEntity productEntity = productMapper.toEntity(request, entity.get().getId(), imageUrl);
-            productRepository.save(productEntity);
+            blobStorageService.uploadFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), key, request.getThumbnailImage());
         } catch (Exception e) {
-            blobStorageService.deleteFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), imageUrl.substring(imageUrl.lastIndexOf("/") + 1));
+            productRepository.deleteById(save.getId());
             throw e;
         }
     }

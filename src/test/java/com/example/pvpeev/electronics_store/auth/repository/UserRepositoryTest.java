@@ -5,6 +5,7 @@ import com.example.pvpeev.electronics_store.auth.entity.UserAuthEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
 import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityEntityResolver;
+import com.example.pvpeev.electronics_store.repository.BaseRepositoryTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
