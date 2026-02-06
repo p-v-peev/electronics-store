@@ -1,7 +1,5 @@
 package com.example.pvpeev.electronics_store.product.service;
 
-import com.example.pvpeev.electronics_store.advice.exception.ResourceConflictExceptionException;
-import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
 import com.example.pvpeev.electronics_store.product.dto.ProductCategoryRequest;
 import com.example.pvpeev.electronics_store.product.dto.ProductCategoryResponse;
 import com.example.pvpeev.electronics_store.product.entity.ProductCategoryEntity;
@@ -35,14 +33,6 @@ public class ProductCategoryService {
     }
 
     public void deleteById(Integer id) {
-        final boolean hasProducts = productRepository.existsByProductCategoryId(id);
-        if (hasProducts) {
-            throw new ResourceConflictExceptionException();
-        }
-
-        final int result = productCategoryRepository.deleteByIdWithCount(id);
-        if (result == 0) {
-            throw new ResourceNotFoundException();
-        }
+        productCategoryRepository.deleteById(id);
     }
 }

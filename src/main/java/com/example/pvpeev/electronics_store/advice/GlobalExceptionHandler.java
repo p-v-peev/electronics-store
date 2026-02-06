@@ -17,8 +17,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.notFound().build();
     }
 
-    @ExceptionHandler(ResourceConflictExceptionException.class)
-    public ResponseEntity<Void> handleResourceConflict(ResourceConflictExceptionException exception) {
+    @ExceptionHandler(ResourceConflictException.class)
+    public ResponseEntity<Void> handleResourceConflict(ResourceConflictException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 

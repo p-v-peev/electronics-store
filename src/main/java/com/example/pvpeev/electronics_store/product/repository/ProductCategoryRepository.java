@@ -11,10 +11,6 @@ import java.util.Optional;
 @Repository
 public interface ProductCategoryRepository extends ListCrudRepository<ProductCategoryEntity, Integer> {
 
-    @Modifying
-    @Query("DELETE FROM product_category WHERE id = :id")
-    int deleteByIdWithCount(Integer id);
-
     Optional<ProductCategoryEntity> findByPath(String path);
 
 }

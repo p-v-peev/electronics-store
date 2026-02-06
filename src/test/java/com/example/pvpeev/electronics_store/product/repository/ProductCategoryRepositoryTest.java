@@ -1,6 +1,8 @@
 package com.example.pvpeev.electronics_store.product.repository;
 
+import com.example.pvpeev.electronics_store.product.entity.ProductBrandEntity;
 import com.example.pvpeev.electronics_store.product.entity.ProductCategoryEntity;
+import com.example.pvpeev.electronics_store.product.entity.ProductEntity;
 import com.example.pvpeev.electronics_store.repository.BaseRepositoryTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,12 @@ public class ProductCategoryRepositoryTest extends BaseRepositoryTest {
 
     @Autowired
     private ProductCategoryRepository productCategoryRepository;
+
+    @Autowired
+    private ProductBrandRepository productBrandRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @Test
     public void testAddTheSameCategoryNameThrowsException() {
@@ -58,27 +66,15 @@ public class ProductCategoryRepositoryTest extends BaseRepositoryTest {
     }
 
     @Test
-    public void testDeleteByUnexistingIdReturnsZero() {
-        assertThat(productCategoryRepository.deleteByIdWithCount(1))
-                .isEqualTo(0);
-    }
-
-    @Test
-    public void testDeleteByIdReturnsOne() {
+    public void testDeleteCategoryWithProductsThrowsException() {
         final ProductCategoryEntity smartphones = productCategoryRepository.save(new ProductCategoryEntity(null, "smartphones", "Smartphones", "Smartphones description"));
-        final ProductCategoryEntity laptops = productCategoryRepository.save(new ProductCategoryEntity(null, "laptops", "Laptops", "Laptops description"));
+        final ProductBrandEntity brand = productBrandRepository.save(new ProductBrandEntity(null, "Apple"));
+        productRepository.save(new ProductEntity(null, smartphones.getId(), brand.getId(), "Apple iPhone 17", "Apple iPhone 17", 1000, 10, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
 
-        assertThat(productCategoryRepository.deleteByIdWithCount(smartphones.getId()))
-                .as("Exactly one item must be deleted")
-                .isEqualTo(1);
-
-        assertThat(productCategoryRepository.deleteByIdWithCount(laptops.getId()))
-                .as("Exactly one item must be deleted")
-                .isEqualTo(1);
-
-        assertThat(productCategoryRepository.findAll())
-                .as("The list must be empty")
-                .isEmpty();
+        final RuntimeException exception = catchRuntimeException(() -> productCategoryRepository.deleteById(smartphones.getId()));
+        assertThat(exception)
+                .as("Exception must be thrown by the database, because if the existing relation")
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
 }
