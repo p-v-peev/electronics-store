@@ -15,7 +15,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThatList;
 
 public class ProductRepositoryTest extends BaseRepositoryTest {
 
@@ -138,7 +137,7 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
                 .as("Exactly one item must be deleted")
                 .isEqualTo(1);
 
-        assertThatList(productRepository.findAll())
+        assertThat(productRepository.findAll())
                 .as("The list must be empty")
                 .isEmpty();
     }

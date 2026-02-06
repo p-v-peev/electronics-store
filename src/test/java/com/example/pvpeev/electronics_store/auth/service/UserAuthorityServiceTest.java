@@ -73,7 +73,7 @@ public class UserAuthorityServiceTest {
         when(userAuthorityRepository.findAllByUserId(userEntity.getId())).thenReturn(List.of(new UserAuthorityEntity(1L, userEntity.getId(), authorityId)));
         when(authorityRepository.findAllById(List.of(authorityId))).thenReturn(List.of(TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_USER)));
 
-        assertThatList(userAuthorityService.findAllByUserId(userEntity.getId()))
+        assertThat(userAuthorityService.findAllByUserId(userEntity.getId()))
                 .as("The list  size must be exactly one")
                 .singleElement()
                 .as("The response doesn't match the expected response")

@@ -1,11 +1,13 @@
 package com.example.pvpeev.electronics_store.product.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.UUID;
 
 @AllArgsConstructor
+@EqualsAndHashCode
 @Getter
 public class ProductResponse {
     private final UUID id;

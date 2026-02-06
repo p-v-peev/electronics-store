@@ -8,7 +8,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThatList;
 
 public class ProductCategoryRepositoryTest extends BaseRepositoryTest {
 
@@ -77,7 +76,7 @@ public class ProductCategoryRepositoryTest extends BaseRepositoryTest {
                 .as("Exactly one item must be deleted")
                 .isEqualTo(1);
 
-        assertThatList(productCategoryRepository.findAll())
+        assertThat(productCategoryRepository.findAll())
                 .as("The list must be empty")
                 .isEmpty();
     }

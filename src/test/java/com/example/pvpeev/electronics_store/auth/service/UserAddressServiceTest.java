@@ -61,7 +61,7 @@ public class UserAddressServiceTest {
         when(userAddressRepository.findAllByUserId(addressEntity.getUserId())).thenReturn(List.of(addressEntity));
 
         final UserAddressResponse expectedResponse = new UserAddressResponse(addressEntity.getId(), addressEntity.getUserId(), addressEntity.getAddress());
-        assertThatList(userAddressService.findAllByUserId(addressEntity.getUserId()))
+        assertThat(userAddressService.findAllByUserId(addressEntity.getUserId()))
                 .as("The service must return exactly one address")
                 .singleElement()
                 .as("The response doesn't match the expected response")

@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AuthorityRepositoryTest extends BaseRepositoryTest {
 
@@ -17,7 +17,7 @@ public class AuthorityRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testTheDefaultAuthoritiesExist() {
-        assertThatList(authorityRepository.findAll())
+        assertThat(authorityRepository.findAll())
                 .as("All 4 authorities must be populated in the database.")
                 .hasSize(4)
                 .as("The following authorities must exist %s, %s, %s, %s",

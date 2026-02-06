@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_USER;
-import static org.assertj.core.api.Assertions.assertThatList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,7 +39,7 @@ public class AuthorityServiceTest {
 
         final AuthorityResponse expectedResponse = new AuthorityResponse(entity.getId(), entity.getName(), entity.getDescription());
 
-        assertThatList(authorityService.findAll())
+        assertThat(authorityService.findAll())
                 .as("The service must return exactly one authority")
                 .singleElement()
                 .as("The response doesn't match the expected response")

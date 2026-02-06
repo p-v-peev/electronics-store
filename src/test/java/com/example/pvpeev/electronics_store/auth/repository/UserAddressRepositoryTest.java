@@ -38,13 +38,13 @@ public class UserAddressRepositoryTest extends BaseRepositoryTest {
         final UserAddressEntity address1 = userAddressRepository.save(new UserAddressEntity(null, user1.getId(), "Test street 1"));
         final UserAddressEntity address2 = userAddressRepository.save(new UserAddressEntity(null, user2.getId(), "Test street 1"));
 
-        assertThatList(userAddressRepository.findAllByUserId(user1.getId()))
+        assertThat(userAddressRepository.findAllByUserId(user1.getId()))
                 .as("User 1 must have exactly one address")
                 .singleElement()
                 .as("User 1 must have the address saved above")
                 .isEqualTo(address1);
 
-        assertThatList(userAddressRepository.findAllByUserId(user2.getId()))
+        assertThat(userAddressRepository.findAllByUserId(user2.getId()))
                 .as("User 2 must have exactly one address")
                 .singleElement()
                 .as("User 2 must have the address saved above")
@@ -66,7 +66,7 @@ public class UserAddressRepositoryTest extends BaseRepositoryTest {
         final UserAddressEntity address1 = userAddressRepository.save(new UserAddressEntity(null, user1.getId(), "Test street 1"));
         final UserAddressEntity address2 = userAddressRepository.save(new UserAddressEntity(null, user1.getId(), "Test street 2"));
 
-        assertThatList(userAddressRepository.findAllByUserId(user1.getId()))
+        assertThat(userAddressRepository.findAllByUserId(user1.getId()))
                 .as("The user must have exactly two addresses")
                 .hasSize(2)
                 .as("The addresses must be exactly the ones saved above")

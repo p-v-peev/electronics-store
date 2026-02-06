@@ -14,7 +14,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThatList;
 
 public class ProductImageRepositoryTest extends BaseRepositoryTest {
 
@@ -32,7 +31,7 @@ public class ProductImageRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testFindByUnexistingProductIdReturnsEmptyList() {
-        assertThatList(productImageRepository.findAllByProductId(UUID.randomUUID()))
+        assertThat(productImageRepository.findAllByProductId(UUID.randomUUID()))
                 .as("The repository must return empty list")
                 .isEmpty();
     }
@@ -44,7 +43,7 @@ public class ProductImageRepositoryTest extends BaseRepositoryTest {
         final ProductEntity productEntity = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity));
         final ProductImageEntity productImageEntity = productImageRepository.save(getProductImageEntity(productEntity, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
 
-        assertThatList(productImageRepository.findAllByProductId(productEntity.getId()))
+        assertThat(productImageRepository.findAllByProductId(productEntity.getId()))
                 .as("The repository must return list with exactly one entity")
                 .singleElement()
                 .isEqualTo(productImageEntity);
@@ -72,7 +71,7 @@ public class ProductImageRepositoryTest extends BaseRepositoryTest {
                 .as("Exactly one item must be deleted")
                 .isEqualTo(1);
 
-        assertThatList(productImageRepository.findAll())
+        assertThat(productImageRepository.findAll())
                 .as("The list must be empty")
                 .isEmpty();
     }

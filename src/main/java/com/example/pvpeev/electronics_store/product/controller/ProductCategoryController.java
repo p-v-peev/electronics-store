@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
@@ -52,9 +53,9 @@ public class ProductCategoryController {
     }
 
     @PostMapping("/{path}/products")
-    public ResponseEntity<ProductResponse> create(@ModelAttribute ProductRequest request, @PathVariable("path") String path, UriComponentsBuilder ucb) {
-        productService.create(request, path);
-        return ResponseEntity.created(ucb.path(PATH).pathSegment("{id}", "products").build(path)).build();
+    public ResponseEntity<ProductResponse> create(@RequestPart("request") ProductRequest request, @RequestPart("image") MultipartFile image, @PathVariable("path") String path, UriComponentsBuilder ucb) {
+        productService.create(request, image, path);
+        return ResponseEntity.created(ucb.path(PATH).pathSegment("{path}", "products").build(path)).build();
     }
 
     // TODO handle delete

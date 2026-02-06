@@ -56,7 +56,7 @@ public class UserAuthorityRepositoryTest extends BaseRepositoryTest {
         final UserAuthorityEntity authority1 = userAuthorityRepository.save(new UserAuthorityEntity(null, user.getId(), roleUser.getId()));
         final UserAuthorityEntity authority2 = userAuthorityRepository.save(new UserAuthorityEntity(null, user.getId(), roleWarehouseWorker.getId()));
 
-        assertThatList(userAuthorityRepository.findAllByUserId(user.getId()))
+        assertThat(userAuthorityRepository.findAllByUserId(user.getId()))
                 .as("The user mst have exactly two authorities")
                 .hasSize(2)
                 .as("The user must have exactly the authorities saved above")
@@ -71,7 +71,7 @@ public class UserAuthorityRepositoryTest extends BaseRepositoryTest {
         assertThat(userAuthorityRepository.deleteByUserId(user.getId()))
                 .as("Exactly one user authority must be deleted")
                 .isEqualTo(1);
-        assertThatList(userAuthorityRepository.findAllByUserId(user.getId()))
+        assertThat(userAuthorityRepository.findAllByUserId(user.getId()))
                 .as("The user must not have any authorities")
                 .isEmpty();
     }

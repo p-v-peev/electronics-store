@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-import static com.example.pvpeev.electronics_store.product.controller.ImageController.PATH;
+import static com.example.pvpeev.electronics_store.product.controller.ProductImageController.PATH;
 
 @RestController
 @RequestMapping(PATH)
 @RequiredArgsConstructor
-public class ImageController {
+public class ProductImageController {
 
     public static final String PATH = "/api/v1/images";
 

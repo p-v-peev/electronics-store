@@ -26,7 +26,7 @@ import java.util.UUID;
 import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_USER;
 import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_WAREHOUSE_WORKER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.list;
 
 @SpringBootTest
@@ -297,7 +297,7 @@ public class UserControllerTest {
                 .isEqualTo(expectedResponse);
 
         final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
-        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
+        assertThat(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
     }
 
     @Test
@@ -337,7 +337,7 @@ public class UserControllerTest {
                 .containsExactlyInAnyOrder(warehouseWorker, storeUser);
 
         final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
-        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(2);
+        assertThat(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(2);
     }
 
     @Test
@@ -369,7 +369,7 @@ public class UserControllerTest {
                 .hasSize(1);
 
         final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
-        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
+        assertThat(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
     }
 
     @Test
@@ -390,7 +390,7 @@ public class UserControllerTest {
                 .hasStatus(HttpStatus.BAD_REQUEST);
 
         final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
-        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
+        assertThat(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
     }
 
     @Test
@@ -440,7 +440,7 @@ public class UserControllerTest {
                 .hasStatus(HttpStatus.BAD_REQUEST);
 
         final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
-        assertThatList(userAuthorityRepository.findAllByUserId(UUID.fromString(userId)))
+        assertThat(userAuthorityRepository.findAllByUserId(UUID.fromString(userId)))
                 .as("The user must have only the ROLE_STORE_USER")
                 .singleElement()
                 .satisfies(entity -> {

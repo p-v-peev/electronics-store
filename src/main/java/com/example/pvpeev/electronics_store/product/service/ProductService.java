@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -42,18 +43,17 @@ public class ProductService {
         return productEntitiesPage.map(productMapper::toResponse);
     }
 
-    public void create(ProductRequest request, String path) {
+    public void create(ProductRequest request, MultipartFile image, String path) {
         final Optional<ProductCategoryEntity> entity = productCategoryRepository.findByPath(path);
         if (entity.isEmpty()) {
             throw new BadRequestException();
         }
         final UUID key = UUID.randomUUID();
         final String imageUrl = blobStorageService.getFileUrl(PRODUCT_THUMBNAILS_STORAGE.getValue(), key);
-        final ProductEntity productEntity = productMapper.toEntity(request, entity.get().getId(), imageUrl);
-        final ProductEntity save = productRepository.save(productEntity);
+        final ProductEntity save = productRepository.save(productMapper.toEntity(request, entity.get().getId(), imageUrl));
 
         try {
-            blobStorageService.uploadFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), key, request.getThumbnailImage());
+            blobStorageService.uploadFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), key, image);
         } catch (Exception e) {
             productRepository.deleteById(save.getId());
             throw e;

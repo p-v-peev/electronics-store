@@ -1,5 +1,6 @@
 package com.example.pvpeev.electronics_store.product.service;
 
+import com.example.pvpeev.electronics_store.advice.exception.FileDeleteException;
 import com.example.pvpeev.electronics_store.advice.exception.FileUploadException;
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
 import com.example.pvpeev.electronics_store.blob.BlobStorageService;
@@ -63,19 +64,17 @@ public class ProductImageServiceTest {
 
     @Test
     public void testGetByProductIdWithExistingProduct() {
-        final UUID productId = UUID.randomUUID();
-        final ProductImageEntity productImageEntity = new ProductImageEntity(UUID.randomUUID(), productId, "http://localhost:9000/product-thumbnails/" + UUID.randomUUID());
+        final ProductImageEntity productImageEntity = new ProductImageEntity(UUID.randomUUID(), UUID.randomUUID(), "http://localhost:9000/product-thumbnails/" + UUID.randomUUID());
 
-
-        when(productRepository.existsById(productId)).thenReturn(true);
-        when(productImageRepository.findAllByProductId(productId)).thenReturn(List.of(productImageEntity));
+        when(productRepository.existsById(productImageEntity.getProductId())).thenReturn(true);
+        when(productImageRepository.findAllByProductId(productImageEntity.getProductId())).thenReturn(List.of(productImageEntity));
 
         final ProductImageResponse expectedResponse = new ProductImageResponse(productImageEntity.getId(), productImageEntity.getProductId(), productImageEntity.getImageUrl());
-        assertThat(productImageService.getByProductId(productId))
+        assertThat(productImageService.getByProductId(productImageEntity.getProductId()))
                 .isEqualTo(List.of(expectedResponse));
 
-        verify(productRepository, times(1)).existsById(productId);
-        verify(productImageRepository, times(1)).findAllByProductId(productId);
+        verify(productRepository, times(1)).existsById(productImageEntity.getProductId());
+        verify(productImageRepository, times(1)).findAllByProductId(productImageEntity.getProductId());
         verify(productImageMapper, times(1)).toResponse(productImageEntity);
     }
 
@@ -130,40 +129,57 @@ public class ProductImageServiceTest {
 
     @Test
     public void testDeleteUnexistingImageThrowsException() {
-        final UUID imageId = UUID.randomUUID();
         final String blobStorageKey = UUID.randomUUID().toString();
-        final ProductImageEntity imageEntity = new ProductImageEntity(imageId, UUID.randomUUID(), "http://localhost:9000/product-thumbnails/" + blobStorageKey);
+        final ProductImageEntity imageEntity = new ProductImageEntity(UUID.randomUUID(), UUID.randomUUID(), "http://localhost:9000/product-thumbnails/" + blobStorageKey);
 
-        when(productImageRepository.findById(imageId)).thenReturn(Optional.of(imageEntity));
-        when(productImageRepository.deleteByIdWithCount(imageId)).thenReturn(0);
+        when(productImageRepository.findById(imageEntity.getId())).thenReturn(Optional.of(imageEntity));
+        when(productImageRepository.deleteByIdWithCount(imageEntity.getId())).thenReturn(0);
 
-        final RuntimeException exception = catchRuntimeException(() -> productImageService.delete(imageId));
+        final RuntimeException exception = catchRuntimeException(() -> productImageService.delete(imageEntity.getId()));
         assertThat(exception)
                 .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
                 .isInstanceOf(ResourceNotFoundException.class);
 
         final InOrder inOrder = inOrder(productImageRepository, blobStorageService, productImageRepository);
-        inOrder.verify(productImageRepository, times(1)).findById(imageId);
+        inOrder.verify(productImageRepository, times(1)).findById(imageEntity.getId());
         inOrder.verify(blobStorageService, times(1)).delete(PRODUCT_IMAGES_STORAGE.getValue(), blobStorageKey);
-        inOrder.verify(productImageRepository, times(1)).deleteByIdWithCount(imageId);
+        inOrder.verify(productImageRepository, times(1)).deleteByIdWithCount(imageEntity.getId());
     }
 
     @Test
     public void testDeleteImageCallsTheBlobServiceBeforeItDeletesItFromTheDB() {
-        final UUID imageId = UUID.randomUUID();
         final String blobStorageKey = UUID.randomUUID().toString();
-        final ProductImageEntity imageEntity = new ProductImageEntity(imageId, UUID.randomUUID(), "http://localhost:9000/product-thumbnails/" + blobStorageKey);
+        final ProductImageEntity imageEntity = new ProductImageEntity(UUID.randomUUID(), UUID.randomUUID(), "http://localhost:9000/product-thumbnails/" + blobStorageKey);
 
-        when(productImageRepository.findById(imageId)).thenReturn(Optional.of(imageEntity));
-        when(productImageRepository.deleteByIdWithCount(imageId)).thenReturn(1);
+        when(productImageRepository.findById(imageEntity.getId())).thenReturn(Optional.of(imageEntity));
+        when(productImageRepository.deleteByIdWithCount(imageEntity.getId())).thenReturn(1);
 
-        productImageService.delete(imageId);
+        productImageService.delete(imageEntity.getId());
 
         final InOrder inOrder = inOrder(productImageRepository, blobStorageService, productImageRepository);
-        inOrder.verify(productImageRepository, times(1)).findById(imageId);
+        inOrder.verify(productImageRepository, times(1)).findById(imageEntity.getId());
         inOrder.verify(blobStorageService, times(1)).delete(PRODUCT_IMAGES_STORAGE.getValue(), blobStorageKey);
-        inOrder.verify(productImageRepository, times(1)).deleteByIdWithCount(imageId);
+        inOrder.verify(productImageRepository, times(1)).deleteByIdWithCount(imageEntity.getId());
+    }
 
+    @Test
+    public void testOnFileDeleteExceptionTheRecordIsNotDeletedFromTheDb() {
+        final String blobStorageKey = UUID.randomUUID().toString();
+        final ProductImageEntity imageEntity = new ProductImageEntity(UUID.randomUUID(), UUID.randomUUID(), "http://localhost:9000/product-thumbnails/" + blobStorageKey);
+
+        when(productImageRepository.findById(imageEntity.getId())).thenReturn(Optional.of(imageEntity));
+        doThrow(new FileDeleteException()).when(blobStorageService).delete(PRODUCT_IMAGES_STORAGE.getValue(), blobStorageKey);
+
+        final RuntimeException exception = catchRuntimeException(() -> productImageService.delete(imageEntity.getId()));
+        assertThat(exception)
+                .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 500")
+                .isInstanceOf(FileDeleteException.class);
+
+
+        final InOrder inOrder = inOrder(productImageRepository, blobStorageService, productImageRepository);
+        inOrder.verify(productImageRepository, times(1)).findById(imageEntity.getId());
+        inOrder.verify(blobStorageService, times(1)).delete(PRODUCT_IMAGES_STORAGE.getValue(), blobStorageKey);
+        inOrder.verify(productImageRepository, times(0)).deleteByIdWithCount(imageEntity.getId());
     }
 
 }
