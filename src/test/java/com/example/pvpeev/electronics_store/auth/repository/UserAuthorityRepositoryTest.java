@@ -1,6 +1,5 @@
 package com.example.pvpeev.electronics_store.auth.repository;
 
-import com.example.pvpeev.electronics_store.auth.authorities.Authorities;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
 import com.example.pvpeev.electronics_store.repository.BaseRepositoryTest;

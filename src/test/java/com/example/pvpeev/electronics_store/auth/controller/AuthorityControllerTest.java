@@ -19,9 +19,6 @@ public class AuthorityControllerTest {
     @Autowired
     private MockMvcTester mockMvcTester;
 
-    @Autowired
-    private AuthorityMapper authorityMapper;
-
 
     @Test
     public void testGetAllAuthorities() {
