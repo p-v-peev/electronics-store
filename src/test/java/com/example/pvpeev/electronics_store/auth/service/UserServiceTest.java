@@ -10,9 +10,6 @@ import com.example.pvpeev.electronics_store.auth.mapper.UserMapperImpl;
 import com.example.pvpeev.electronics_store.auth.repository.UserAddressRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserAuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserRepository;
-import com.example.pvpeev.electronics_store.auth.roles.AuthorityResolver;
-import com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp;
-import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -24,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.ROLE_STORE_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
 import static org.mockito.Mockito.*;
@@ -39,9 +37,6 @@ public class UserServiceTest {
 
     @Mock
     private UserAddressRepository userAddressRepository;
-
-    @Spy
-    private AuthorityResolver authorityResolver = new TestAuthorityResolver();
 
     @Spy
     private UserMapper userMapper = new UserMapperImpl();
@@ -64,7 +59,7 @@ public class UserServiceTest {
         verify(userMapper, times(1)).toEntity(userRequest, true);
         verify(userRepository, times(1)).save(toSave);
         verify(userAuthorityRepository, times(1))
-                .save(new UserAuthorityEntity(null, savedEntity.getId(), authorityResolver.resolveIdByRoleConstant(RoleConstantsp.ROLE_STORE_USER)));
+                .save(new UserAuthorityEntity(null, savedEntity.getId(), ROLE_STORE_USER.getId()));
     }
 
     @Test

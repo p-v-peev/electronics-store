@@ -2,18 +2,16 @@ package com.example.pvpeev.electronics_store.auth.controller;
 
 import com.example.pvpeev.electronics_store.auth.dto.*;
 import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
+import com.example.pvpeev.electronics_store.auth.mapper.AuthorityMapper;
 import com.example.pvpeev.electronics_store.auth.repository.UserAddressRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserAuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserRepository;
-import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityResolver;
-import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityResolverConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,14 +21,13 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
-import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_USER;
-import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_WAREHOUSE_WORKER;
+import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.ROLE_STORE_USER;
+import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.ROLE_STORE_WAREHOUSE_WORKER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.list;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestAuthorityResolverConfiguration.class)
 public class UserControllerTest {
 
     @Autowired
@@ -46,7 +43,7 @@ public class UserControllerTest {
     private UserAddressRepository userAddressRepository;
 
     @Autowired
-    private TestAuthorityResolver authorityResolver;
+    private AuthorityMapper authorityMapper;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -286,7 +283,7 @@ public class UserControllerTest {
         final String userLocation = response.getResponse().getHeader(HttpHeaders.LOCATION);
         assertThat(userLocation).isNotNull();
 
-        final AuthorityResponse expectedResponse = authorityResolver.resolveByRoleConstant(ROLE_STORE_USER);
+        final AuthorityResponse expectedResponse = authorityMapper.toResponse(ROLE_STORE_USER);
         assertThat(mockMvcTester.get()
                 .uri(userLocation + "/authorities"))
                 .hasStatusOk()
@@ -312,7 +309,7 @@ public class UserControllerTest {
         final String userLocation = userResponse.getResponse().getHeader(HttpHeaders.LOCATION);
         assertThat(userLocation).isNotNull();
 
-        final AuthorityResponse warehouseWorker = authorityResolver.resolveByRoleConstant(ROLE_STORE_WAREHOUSE_WORKER);
+        final AuthorityResponse warehouseWorker = authorityMapper.toResponse(ROLE_STORE_WAREHOUSE_WORKER);
 
         final MvcTestResult createAuthorityResponse = mockMvcTester.post()
                 .uri(userLocation + "/authorities/" + warehouseWorker.getId())
@@ -325,7 +322,7 @@ public class UserControllerTest {
                 .convertTo(AuthorityResponse.class)
                 .isEqualTo(warehouseWorker);
 
-        final AuthorityResponse storeUser = authorityResolver.resolveByRoleConstant(ROLE_STORE_USER);
+        final AuthorityResponse storeUser = authorityMapper.toResponse(ROLE_STORE_USER);
 
         assertThat(mockMvcTester.get()
                 .uri(userLocation + "/authorities"))
@@ -444,7 +441,7 @@ public class UserControllerTest {
                 .singleElement()
                 .satisfies(entity -> {
                     assertThat(entity.getUserId().toString()).isEqualTo(userId);
-                    assertThat(entity.getAuthorityId()).isEqualTo(authorityResolver.resolveIdByRoleConstant(ROLE_STORE_USER));
+                    assertThat(entity.getAuthorityId()).isEqualTo(ROLE_STORE_USER.getId());
                 });
     }
 

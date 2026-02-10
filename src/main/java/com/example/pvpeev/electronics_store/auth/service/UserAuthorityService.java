@@ -2,20 +2,17 @@ package com.example.pvpeev.electronics_store.auth.service;
 
 import com.example.pvpeev.electronics_store.advice.exception.BadRequestException;
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
+import com.example.pvpeev.electronics_store.auth.authorities.Authorities;
+import com.example.pvpeev.electronics_store.auth.authorities.AuthoritiesResolver;
 import com.example.pvpeev.electronics_store.auth.dto.AuthorityResponse;
-import com.example.pvpeev.electronics_store.auth.entity.AuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.mapper.AuthorityMapper;
-import com.example.pvpeev.electronics_store.auth.repository.AuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserAuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserRepository;
-import com.example.pvpeev.electronics_store.auth.roles.AuthorityResolver;
-import com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -26,35 +23,38 @@ public class UserAuthorityService {
 
     private final UserAuthorityRepository userAuthorityRepository;
 
-    private final AuthorityRepository authorityRepository;
-
     private final UserRepository userRepository;
 
-    private final AuthorityResolver authorityResolver;
+    private final AuthoritiesResolver authoritiesResolver;
 
     public List<AuthorityResponse> findAllByUserId(UUID userId) {
         final boolean exists = userRepository.findByIdAndEnabledIsTrue(userId).isPresent();
         if (!exists) {
             throw new ResourceNotFoundException();
         }
-        final List<Integer> list = userAuthorityRepository.findAllByUserId(userId).stream().map(UserAuthorityEntity::getAuthorityId).toList();
-        return authorityRepository.findAllById(list).stream().map(authorityMapper::toResponse).toList();
+        return userAuthorityRepository.findAllByUserId(userId)
+                .stream()
+                .map(UserAuthorityEntity::getAuthorityId)
+                .map(authoritiesResolver::resolveById)
+                .map(authorityMapper::toResponse)
+                .toList();
     }
 
     public AuthorityResponse grantUserAuthority(UUID userId, Integer authorityId) {
+        final Authorities authorities = authoritiesResolver.resolveById(authorityId);
+        if (authorities == null) {
+            throw new BadRequestException();
+        }
+
         final UserAuthorityEntity userAuthority = new UserAuthorityEntity(null, userId, authorityId);
         userAuthorityRepository.save(userAuthority);
 
-        // Must always have result because of the relation in the database
-        final Optional<AuthorityEntity> authorityEntityOptional = authorityRepository.findById(authorityId);
-        final AuthorityEntity authorityEntity = authorityEntityOptional.get();
-
-        return authorityMapper.toResponse(authorityEntity);
+        return authorityMapper.toResponse(authorities);
     }
 
     public void revokeUserAuthority(UUID userId, Integer authorityId) {
-        final Integer id = authorityResolver.resolveIdByRoleConstant(RoleConstantsp.ROLE_STORE_USER);
-        if (id.equals(authorityId)) {
+        final Authorities authorities = authoritiesResolver.resolveById(authorityId);
+        if (Authorities.ROLE_STORE_USER == authorities || authorities == null) {
             throw new BadRequestException();
         }
 

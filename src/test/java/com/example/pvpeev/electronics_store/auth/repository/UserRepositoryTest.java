@@ -1,17 +1,15 @@
 package com.example.pvpeev.electronics_store.auth.repository;
 
-import com.example.pvpeev.electronics_store.auth.entity.AuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthorityEntity;
 import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
-import com.example.pvpeev.electronics_store.auth.roles.TestAuthorityEntityResolver;
 import com.example.pvpeev.electronics_store.repository.BaseRepositoryTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import static com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp.ROLE_STORE_USER;
+import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.ROLE_STORE_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
 import static org.assertj.core.api.InstanceOfAssertFactories.SET;
@@ -36,10 +34,9 @@ public class UserRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testFindUserAuthByEmail() {
-        final AuthorityEntity authority = TestAuthorityEntityResolver.resolveByRoleConstant(ROLE_STORE_USER);
         final UserEntity userEntity = userRepository.save(getUserEntity());
 
-        userAuthorityRepository.save(new UserAuthorityEntity(null, userEntity.getId(), authority.getId()));
+        userAuthorityRepository.save(new UserAuthorityEntity(null, userEntity.getId(), ROLE_STORE_USER.getId()));
 
         assertThat(userRepository.findUserAuthByEmail(userEntity.getEmail()))
                 .as("The user must exist in the repository")
@@ -50,7 +47,7 @@ public class UserRepositoryTest extends BaseRepositoryTest {
                 .asInstanceOf(SET)
                 .as("The user must have exactly one authority")
                 .singleElement()
-                .isEqualTo(authority.getName());
+                .isEqualTo(ROLE_STORE_USER.getId());
     }
 
     @Test

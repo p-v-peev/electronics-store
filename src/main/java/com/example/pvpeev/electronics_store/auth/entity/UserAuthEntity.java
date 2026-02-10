@@ -28,5 +28,5 @@ public class UserAuthEntity {
 
     private final boolean enabled;
 
-    private final Set<String> authorities;
+    private final Set<Integer> authorities;
 }

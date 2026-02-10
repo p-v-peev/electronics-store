@@ -1,12 +1,12 @@
 package com.example.pvpeev.electronics_store.auth.mapper;
 
 import com.example.pvpeev.electronics_store.auth.dto.AuthorityResponse;
-import com.example.pvpeev.electronics_store.auth.entity.AuthorityEntity;
+import com.example.pvpeev.electronics_store.auth.authorities.Authorities;
 import org.mapstruct.Mapper;
 
 @Mapper
 public interface AuthorityMapper {
 
-    AuthorityResponse toResponse(AuthorityEntity entity);
+    AuthorityResponse toResponse(Authorities authority);
 
 }

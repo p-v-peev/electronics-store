@@ -1,6 +1,8 @@
 package com.example.pvpeev.electronics_store.auth.service;
 
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
+import com.example.pvpeev.electronics_store.auth.authorities.Authorities;
+import com.example.pvpeev.electronics_store.auth.authorities.AuthoritiesResolver;
 import com.example.pvpeev.electronics_store.auth.dto.UserRequest;
 import com.example.pvpeev.electronics_store.auth.dto.UserResponse;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthorityEntity;
@@ -9,8 +11,6 @@ import com.example.pvpeev.electronics_store.auth.mapper.UserMapper;
 import com.example.pvpeev.electronics_store.auth.repository.UserAddressRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserAuthorityRepository;
 import com.example.pvpeev.electronics_store.auth.repository.UserRepository;
-import com.example.pvpeev.electronics_store.auth.roles.AuthorityResolver;
-import com.example.pvpeev.electronics_store.auth.roles.RoleConstantsp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,14 +30,13 @@ public class UserService {
 
     private final UserAddressRepository userAddressRepository;
 
-    private final AuthorityResolver authorityResolver;
+    private final AuthoritiesResolver authorityResolver;
 
     @Transactional
     public UUID create(UserRequest request) {
         final UserEntity entity = userMapper.toEntity(request, true);
         final UUID id = userRepository.save(entity).getId();
-        final Integer authorityId = authorityResolver.resolveIdByRoleConstant(RoleConstantsp.ROLE_STORE_USER);
-        userAuthorityRepository.save(new UserAuthorityEntity(null, id, authorityId));
+        userAuthorityRepository.save(new UserAuthorityEntity(null, id, Authorities.ROLE_STORE_USER.getId()));
         return id;
     }
 

@@ -9,6 +9,6 @@ import lombok.Getter;
 @Getter
 public class AuthorityResponse {
     private final Integer id;
-    private final String name;
+    private final String authority;
     private final String description;
 }
