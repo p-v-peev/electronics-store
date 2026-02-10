@@ -8,9 +8,11 @@ import com.example.pvpeev.electronics_store.product.dto.ProductRequest;
 import com.example.pvpeev.electronics_store.product.dto.ProductResponse;
 import com.example.pvpeev.electronics_store.product.entity.ProductCategoryEntity;
 import com.example.pvpeev.electronics_store.product.entity.ProductEntity;
+import com.example.pvpeev.electronics_store.product.entity.ProductImageEntity;
 import com.example.pvpeev.electronics_store.product.mapper.ProductMapper;
 import com.example.pvpeev.electronics_store.product.mapper.ProductMapperImpl;
 import com.example.pvpeev.electronics_store.product.repository.ProductCategoryRepository;
+import com.example.pvpeev.electronics_store.product.repository.ProductImageRepository;
 import com.example.pvpeev.electronics_store.product.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.example.pvpeev.electronics_store.TextConstants.PRODUCT_IMAGES_STORAGE;
 import static com.example.pvpeev.electronics_store.TextConstants.PRODUCT_THUMBNAILS_STORAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
@@ -42,6 +45,9 @@ public class ProductServiceTest {
 
     @Mock
     private BlobStorageService blobStorageService;
+
+    @Mock
+    private ProductImageRepository productImageRepository;
 
     @Spy
     private ProductMapper productMapper = new ProductMapperImpl();
@@ -159,20 +165,35 @@ public class ProductServiceTest {
 
     @Test
     public void testDeleteByUnexistingIdThrowsException() {
-        final UUID id = UUID.randomUUID();
-        when(productRepository.softDeleteById(id)).thenReturn(0);
+        final UUID productId = UUID.randomUUID();
+        when(productImageRepository.findAllByProductId(productId)).thenReturn(List.of());
+        when(productRepository.softDeleteById(productId)).thenReturn(0);
 
-        final RuntimeException exception = catchRuntimeException(() -> productService.softDeleteById(id));
+        final RuntimeException exception = catchRuntimeException(() -> productService.softDeleteById(productId));
         assertThat(exception)
                 .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
                 .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(productImageRepository, times(1)).findAllByProductId(productId);
+        verify(blobStorageService, times(0)).delete(eq(PRODUCT_IMAGES_STORAGE.getValue()), any(String.class));
+        verify(productImageRepository, times(1)).deleteAllById(anyList());
+        verify(productRepository, times(1)).softDeleteById(productId);
     }
 
     @Test
     public void testDeleteById() {
-        final UUID id = UUID.randomUUID();
-        when(productRepository.softDeleteById(id)).thenReturn(1);
+        final UUID productId = UUID.randomUUID();
+        final ProductImageEntity savedEntity = new ProductImageEntity(UUID.randomUUID(), UUID.randomUUID(), "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1");
 
-        productService.softDeleteById(id);
+        when(productImageRepository.findAllByProductId(productId)).thenReturn(List.of(savedEntity));
+        when(productRepository.softDeleteById(productId)).thenReturn(1);
+
+        productService.softDeleteById(productId);
+
+        final String imageUrl = savedEntity.getImageUrl();
+        verify(productImageRepository, times(1)).findAllByProductId(productId);
+        verify(blobStorageService, times(1)).delete(PRODUCT_IMAGES_STORAGE.getValue(), imageUrl.substring(imageUrl.lastIndexOf('/') + 1));
+        verify(productImageRepository, times(1)).deleteAllById(List.of(savedEntity.getId()));
+        verify(productRepository, times(1)).softDeleteById(productId);
     }
 }

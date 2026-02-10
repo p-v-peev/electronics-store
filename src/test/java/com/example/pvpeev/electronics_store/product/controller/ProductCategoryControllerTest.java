@@ -21,18 +21,20 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
+import org.springframework.web.client.RestClient;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.example.pvpeev.electronics_store.TextConstants.PRODUCT_IMAGES_STORAGE;
+import static com.example.pvpeev.electronics_store.TextConstants.PRODUCT_THUMBNAILS_STORAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.list;
 
@@ -62,7 +64,7 @@ public class ProductCategoryControllerTest {
 
     @AfterEach
     public void afterEachTest() {
-        blobsToDelete.forEach(blobId -> blobStorageService.delete(PRODUCT_IMAGES_STORAGE.getValue(), blobId));
+        blobsToDelete.forEach(blobId -> blobStorageService.delete(PRODUCT_THUMBNAILS_STORAGE.getValue(), blobId));
         productRepository.deleteAll();
         productCategoryRepository.deleteAll();
         productBrandRepository.deleteAll();
@@ -225,6 +227,10 @@ public class ProductCategoryControllerTest {
                 .containsHeader(HttpHeaders.LOCATION);
 
         final ProductResponse productResponse = objectMapper.readValue(productResult.getResponse().getContentAsByteArray(), ProductResponse.class);
+
+        final String imageUrl = productResponse.getThumbnailImageUrl();
+        blobsToDelete.add(imageUrl.substring(imageUrl.lastIndexOf('/') + 1));
+
         assertThat(mockMvcTester.delete()
                 .uri(ProductController.PATH + "/" + productResponse.getId()))
                 .hasStatus(HttpStatus.NO_CONTENT);
@@ -236,5 +242,13 @@ public class ProductCategoryControllerTest {
                 .extractingPath("$.content")
                 .convertTo(list(ProductResponse.class))
                 .isEmpty();
+
+        final HttpStatusCode statusCode = RestClient.create()
+                .get()
+                .uri(imageUrl)
+                .exchange((req, resp) -> resp.getStatusCode());
+        assertThat(statusCode)
+                .as("The thumbnail must remain so it can be shown in the orders history")
+                .isEqualTo(HttpStatus.OK);
     }
 }

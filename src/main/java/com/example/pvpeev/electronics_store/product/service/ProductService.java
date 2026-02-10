@@ -7,8 +7,10 @@ import com.example.pvpeev.electronics_store.product.dto.ProductRequest;
 import com.example.pvpeev.electronics_store.product.dto.ProductResponse;
 import com.example.pvpeev.electronics_store.product.entity.ProductCategoryEntity;
 import com.example.pvpeev.electronics_store.product.entity.ProductEntity;
+import com.example.pvpeev.electronics_store.product.entity.ProductImageEntity;
 import com.example.pvpeev.electronics_store.product.mapper.ProductMapper;
 import com.example.pvpeev.electronics_store.product.repository.ProductCategoryRepository;
+import com.example.pvpeev.electronics_store.product.repository.ProductImageRepository;
 import com.example.pvpeev.electronics_store.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,9 +18,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.example.pvpeev.electronics_store.TextConstants.PRODUCT_IMAGES_STORAGE;
 import static com.example.pvpeev.electronics_store.TextConstants.PRODUCT_THUMBNAILS_STORAGE;
 
 @Service
@@ -30,6 +34,8 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     private final ProductCategoryRepository productCategoryRepository;
+
+    private final ProductImageRepository productImageRepository;
 
     private final BlobStorageService blobStorageService;
 
@@ -61,9 +67,20 @@ public class ProductService {
         return productMapper.toResponse(savedEntity);
     }
 
-    public void softDeleteById(UUID id) {
-        //TODO delete all product images
-        final int result = productRepository.softDeleteById(id);
+    public void softDeleteById(UUID productId) {
+        // Delete the product images from the blob storage
+        final List<ProductImageEntity> productImages = productImageRepository.findAllByProductId(productId);
+        productImages
+                .stream()
+                .map(ProductImageEntity::getImageUrl)
+                .map(url -> url.substring(url.lastIndexOf('/') + 1))
+                .forEach(key -> blobStorageService.delete(PRODUCT_IMAGES_STORAGE.getValue(), key));
+
+        // Delete the product image records in the database
+        final List<UUID> productImageIds = productImages.stream().map(ProductImageEntity::getId).toList();
+        productImageRepository.deleteAllById(productImageIds);
+
+        final int result = productRepository.softDeleteById(productId);
         if (result == 0) {
             throw new ResourceNotFoundException();
         }
