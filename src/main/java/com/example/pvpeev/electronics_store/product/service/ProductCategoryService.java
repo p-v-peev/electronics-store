@@ -5,7 +5,6 @@ import com.example.pvpeev.electronics_store.product.dto.ProductCategoryResponse;
 import com.example.pvpeev.electronics_store.product.entity.ProductCategoryEntity;
 import com.example.pvpeev.electronics_store.product.mapper.ProductCategoryMapper;
 import com.example.pvpeev.electronics_store.product.repository.ProductCategoryRepository;
-import com.example.pvpeev.electronics_store.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

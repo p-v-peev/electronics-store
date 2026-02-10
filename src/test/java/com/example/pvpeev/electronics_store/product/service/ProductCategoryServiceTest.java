@@ -6,7 +6,6 @@ import com.example.pvpeev.electronics_store.product.entity.ProductCategoryEntity
 import com.example.pvpeev.electronics_store.product.mapper.ProductCategoryMapper;
 import com.example.pvpeev.electronics_store.product.mapper.ProductCategoryMapperImpl;
 import com.example.pvpeev.electronics_store.product.repository.ProductCategoryRepository;
-import com.example.pvpeev.electronics_store.product.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

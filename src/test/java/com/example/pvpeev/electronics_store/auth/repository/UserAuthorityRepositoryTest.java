@@ -13,7 +13,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchRuntimeException;
 
 public class UserAuthorityRepositoryTest extends BaseRepositoryTest {
 
