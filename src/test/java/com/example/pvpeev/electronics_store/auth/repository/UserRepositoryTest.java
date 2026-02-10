@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.ROLE_STORE_USER;
+import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.ROLE_STORE_WAREHOUSE_WORKER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
 import static org.assertj.core.api.InstanceOfAssertFactories.SET;
@@ -37,6 +38,7 @@ public class UserRepositoryTest extends BaseRepositoryTest {
         final UserEntity userEntity = userRepository.save(getUserEntity());
 
         userAuthorityRepository.save(new UserAuthorityEntity(null, userEntity.getId(), ROLE_STORE_USER.getId()));
+        userAuthorityRepository.save(new UserAuthorityEntity(null, userEntity.getId(), ROLE_STORE_WAREHOUSE_WORKER.getId()));
 
         assertThat(userRepository.findUserAuthByEmail(userEntity.getEmail()))
                 .as("The user must exist in the repository")
@@ -45,9 +47,7 @@ public class UserRepositoryTest extends BaseRepositoryTest {
                 .extracting(UserAuthEntity::getAuthorities)
                 .as("The authorities must be instance of Set<>() for constant time search")
                 .asInstanceOf(SET)
-                .as("The user must have exactly one authority")
-                .singleElement()
-                .isEqualTo(ROLE_STORE_USER.getId());
+                .containsExactlyInAnyOrder(ROLE_STORE_USER.getId(), ROLE_STORE_WAREHOUSE_WORKER.getId());
     }
 
     @Test

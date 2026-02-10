@@ -19,6 +19,9 @@ public class AuthorityControllerTest {
     @Autowired
     private MockMvcTester mockMvcTester;
 
+    @Autowired
+    private AuthorityMapper authorityMapper;
+
 
     @Test
     public void testGetAllAuthorities() {
@@ -28,10 +31,10 @@ public class AuthorityControllerTest {
                 .convertTo(list(AuthorityResponse.class))
                 .hasSize(4)
                 .containsExactlyInAnyOrder(
-                        new AuthorityResponse(ROLE_STORE_USER.getId(), ROLE_STORE_USER.getAuthority(), ROLE_STORE_USER.getDescription()),
-                        new AuthorityResponse(ROLE_STORE_WAREHOUSE_WORKER.getId(), ROLE_STORE_WAREHOUSE_WORKER.getAuthority(), ROLE_STORE_WAREHOUSE_WORKER.getDescription()),
-                        new AuthorityResponse(ROLE_STORE_PRODUCT_ADMIN.getId(), ROLE_STORE_PRODUCT_ADMIN.getAuthority(), ROLE_STORE_PRODUCT_ADMIN.getDescription()),
-                        new AuthorityResponse(ROLE_STORE_AUTHORITY_ADMIN.getId(), ROLE_STORE_AUTHORITY_ADMIN.getAuthority(), ROLE_STORE_AUTHORITY_ADMIN.getDescription())
+                        authorityMapper.toResponse(ROLE_STORE_USER),
+                        authorityMapper.toResponse(ROLE_STORE_WAREHOUSE_WORKER),
+                        authorityMapper.toResponse(ROLE_STORE_PRODUCT_ADMIN),
+                        authorityMapper.toResponse(ROLE_STORE_AUTHORITY_ADMIN)
                 );
     }
 }

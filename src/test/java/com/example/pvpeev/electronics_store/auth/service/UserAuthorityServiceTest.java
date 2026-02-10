@@ -2,6 +2,7 @@ package com.example.pvpeev.electronics_store.auth.service;
 
 import com.example.pvpeev.electronics_store.advice.exception.BadRequestException;
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
+import com.example.pvpeev.electronics_store.auth.authorities.Authorities;
 import com.example.pvpeev.electronics_store.auth.authorities.AuthoritiesResolver;
 import com.example.pvpeev.electronics_store.auth.authorities.AuthoritiesResolverImpl;
 import com.example.pvpeev.electronics_store.auth.dto.AuthorityResponse;
@@ -59,6 +60,9 @@ public class UserAuthorityServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
 
         verify(userRepository, times(1)).findByIdAndEnabledIsTrue(userId);
+        verify(userAuthorityRepository, times(0)).findAllByUserId(userId);
+        verify(authoritiesResolver, times(0)).resolveById(anyInt());
+        verify(authorityMapper, times(0)).toResponse(any(Authorities.class));
     }
 
     @Test
@@ -72,10 +76,12 @@ public class UserAuthorityServiceTest {
                 .as("The list  size must be exactly one")
                 .singleElement()
                 .as("The response doesn't match the expected response")
-                .isEqualTo(authorityMapper.toResponse(ROLE_STORE_USER));
+                .isEqualTo(new AuthorityResponse(ROLE_STORE_USER.getId(), ROLE_STORE_USER.getAuthority(), ROLE_STORE_USER.getDescription()));
 
         verify(userRepository, times(1)).findByIdAndEnabledIsTrue(userEntity.getId());
         verify(userAuthorityRepository, times(1)).findAllByUserId(userEntity.getId());
+        verify(authoritiesResolver, times(1)).resolveById(ROLE_STORE_USER.getId());
+        verify(authorityMapper, times(1)).toResponse(ROLE_STORE_USER);
     }
 
     @Test
@@ -87,6 +93,7 @@ public class UserAuthorityServiceTest {
                 .isEqualTo(new AuthorityResponse(ROLE_STORE_USER.getId(), ROLE_STORE_USER.getAuthority(), ROLE_STORE_USER.getDescription()));
 
         verify(userAuthorityRepository, times(1)).save(new UserAuthorityEntity(null, userId, ROLE_STORE_USER.getId()));
+        verify(authoritiesResolver, times(1)).resolveById(ROLE_STORE_USER.getId());
         verify(authorityMapper, times(1)).toResponse(ROLE_STORE_USER);
     }
 
@@ -99,6 +106,7 @@ public class UserAuthorityServiceTest {
                 .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
                 .isInstanceOf(BadRequestException.class);
 
+        verify(authoritiesResolver, times(1)).resolveById(ROLE_STORE_USER.getId());
         verify(userAuthorityRepository, times(0)).deleteByUserIdAndAuthorityId(userId, ROLE_STORE_USER.getId());
     }
 
@@ -113,6 +121,7 @@ public class UserAuthorityServiceTest {
                 .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
                 .isInstanceOf(ResourceNotFoundException.class);
 
+        verify(authoritiesResolver, times(1)).resolveById(ROLE_STORE_WAREHOUSE_WORKER.getId());
         verify(userAuthorityRepository, times(1)).deleteByUserIdAndAuthorityId(userId, ROLE_STORE_WAREHOUSE_WORKER.getId());
     }
 
@@ -124,6 +133,7 @@ public class UserAuthorityServiceTest {
 
         userAuthorityService.revokeUserAuthority(userId, ROLE_STORE_WAREHOUSE_WORKER.getId());
 
+        verify(authoritiesResolver, times(1)).resolveById(ROLE_STORE_WAREHOUSE_WORKER.getId());
         verify(userAuthorityRepository, times(1)).deleteByUserIdAndAuthorityId(userId, ROLE_STORE_WAREHOUSE_WORKER.getId());
     }
 

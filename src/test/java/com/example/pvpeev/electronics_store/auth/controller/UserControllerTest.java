@@ -283,14 +283,13 @@ public class UserControllerTest {
         final String userLocation = response.getResponse().getHeader(HttpHeaders.LOCATION);
         assertThat(userLocation).isNotNull();
 
-        final AuthorityResponse expectedResponse = authorityMapper.toResponse(ROLE_STORE_USER);
         assertThat(mockMvcTester.get()
                 .uri(userLocation + "/authorities"))
                 .hasStatusOk()
                 .bodyJson()
                 .convertTo(list(AuthorityResponse.class))
                 .singleElement()
-                .isEqualTo(expectedResponse);
+                .isEqualTo(authorityMapper.toResponse(ROLE_STORE_USER));
 
         final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
         assertThat(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(1);
@@ -309,10 +308,8 @@ public class UserControllerTest {
         final String userLocation = userResponse.getResponse().getHeader(HttpHeaders.LOCATION);
         assertThat(userLocation).isNotNull();
 
-        final AuthorityResponse warehouseWorker = authorityMapper.toResponse(ROLE_STORE_WAREHOUSE_WORKER);
-
         final MvcTestResult createAuthorityResponse = mockMvcTester.post()
-                .uri(userLocation + "/authorities/" + warehouseWorker.getId())
+                .uri(userLocation + "/authorities/" + ROLE_STORE_WAREHOUSE_WORKER.getId())
                 .exchange();
 
         assertThat(createAuthorityResponse)
@@ -320,9 +317,8 @@ public class UserControllerTest {
                 .containsHeader(HttpHeaders.LOCATION)
                 .bodyJson()
                 .convertTo(AuthorityResponse.class)
-                .isEqualTo(warehouseWorker);
+                .isEqualTo(authorityMapper.toResponse(ROLE_STORE_WAREHOUSE_WORKER));
 
-        final AuthorityResponse storeUser = authorityMapper.toResponse(ROLE_STORE_USER);
 
         assertThat(mockMvcTester.get()
                 .uri(userLocation + "/authorities"))
@@ -330,7 +326,7 @@ public class UserControllerTest {
                 .bodyJson()
                 .convertTo(list(AuthorityResponse.class))
                 .hasSize(2)
-                .containsExactlyInAnyOrder(warehouseWorker, storeUser);
+                .containsExactlyInAnyOrder(authorityMapper.toResponse(ROLE_STORE_USER), authorityMapper.toResponse(ROLE_STORE_WAREHOUSE_WORKER));
 
         final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
         assertThat(userAuthorityRepository.findAllByUserId(UUID.fromString(userId))).hasSize(2);
@@ -350,11 +346,11 @@ public class UserControllerTest {
         assertThat(userLocation).isNotNull();
 
         assertThat(mockMvcTester.post()
-                .uri(userLocation + "/authorities/2"))
+                .uri(userLocation + "/authorities/" + ROLE_STORE_WAREHOUSE_WORKER.getId()))
                 .hasStatus(HttpStatus.CREATED);
 
         assertThat(mockMvcTester.delete()
-                .uri(userLocation + "/authorities/2"))
+                .uri(userLocation + "/authorities/" + ROLE_STORE_WAREHOUSE_WORKER.getId()))
                 .hasStatus(HttpStatus.NO_CONTENT);
 
         assertThat(mockMvcTester.get()
@@ -382,7 +378,7 @@ public class UserControllerTest {
         assertThat(userLocation).isNotNull();
 
         assertThat(mockMvcTester.delete()
-                .uri(userLocation + "/authorities/1"))
+                .uri(userLocation + "/authorities/" + ROLE_STORE_USER.getId()))
                 .hasStatus(HttpStatus.BAD_REQUEST);
 
         final String userId = userLocation.substring(userLocation.lastIndexOf('/') + 1);
@@ -403,7 +399,7 @@ public class UserControllerTest {
         assertThat(userLocation).isNotNull();
 
         assertThat(mockMvcTester.post()
-                .uri(userLocation + "/authorities/2"))
+                .uri(userLocation + "/authorities/" + ROLE_STORE_WAREHOUSE_WORKER.getId()))
                 .hasStatus(HttpStatus.CREATED);
 
         assertThat(mockMvcTester.delete()

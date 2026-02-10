@@ -58,8 +58,7 @@ public class UserServiceTest {
 
         verify(userMapper, times(1)).toEntity(userRequest, true);
         verify(userRepository, times(1)).save(toSave);
-        verify(userAuthorityRepository, times(1))
-                .save(new UserAuthorityEntity(null, savedEntity.getId(), ROLE_STORE_USER.getId()));
+        verify(userAuthorityRepository, times(1)).save(new UserAuthorityEntity(null, savedEntity.getId(), ROLE_STORE_USER.getId()));
     }
 
     @Test
