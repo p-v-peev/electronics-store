@@ -109,7 +109,7 @@ public class ProductImageRepositoryTest extends BaseRepositoryTest {
     }
 
     private static @NotNull ProductEntity getProductEntity(ProductCategoryEntity productCategoryEntity, ProductBrandEntity productBrandEntity) {
-        return new ProductEntity(null, productCategoryEntity.getId(), productBrandEntity.getId(), "iPhone 17", "iPhone 17", 1200, 10, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1");
+        return new ProductEntity(null, productCategoryEntity.getId(), productBrandEntity.getId(), "iPhone 17", "iPhone 17", 1200, 10, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1", false);
     }
 
     private static @NotNull ProductCategoryEntity getProductCategoryEntity() {

@@ -9,6 +9,6 @@ public class ProductRequest {
     private final Integer productBrandId;
     private final String name;
     private final String description;
-    private final int price;
-    private final int quantityAvailable;
+    private final Integer price;
+    private final Integer quantityAvailable;
 }

@@ -12,6 +12,6 @@ public interface ProductMapper {
     ProductResponse toResponse(ProductEntity entity);
 
     @Mapping(target = "id", ignore = true)
-    ProductEntity toEntity(ProductRequest request, Integer productCategoryId, String thumbnailImageUrl);
+    ProductEntity toEntity(ProductRequest request, Integer productCategoryId, String thumbnailImageUrl, boolean deleted);
 
 }

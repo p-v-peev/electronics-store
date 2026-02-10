@@ -45,7 +45,7 @@ public class UserService {
         return userRepository.findByIdAndEnabledIsTrue(id).map(userMapper::toResponse);
     }
 
-    public void deleteById(UUID id) {
+    public void softDeleteById(UUID id) {
         userAddressRepository.deleteByUserId(id);
         userAuthorityRepository.deleteByUserId(id);
         final int result = userRepository.softDeleteUser(id);

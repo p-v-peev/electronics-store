@@ -19,5 +19,5 @@ public class UserAuthorityEntity {
 
     private final UUID userId;
 
-    private final int authorityId;
+    private final Integer authorityId;
 }

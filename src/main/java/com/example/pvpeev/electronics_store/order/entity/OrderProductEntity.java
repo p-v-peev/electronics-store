@@ -19,8 +19,8 @@ public class OrderProductEntity {
 
     private final UUID productId;
 
-    private final int quantity;
+    private final Integer quantity;
 
-    private final int priceAtPurchase;
+    private final Integer priceAtPurchase;
 
 }

@@ -40,7 +40,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable("id") UUID id) {
-        userService.deleteById(id);
+        userService.softDeleteById(id);
         return ResponseEntity.noContent().build();
     }
 

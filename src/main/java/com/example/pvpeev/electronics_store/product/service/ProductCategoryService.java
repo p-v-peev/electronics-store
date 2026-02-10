@@ -19,9 +19,6 @@ public class ProductCategoryService {
 
     private final ProductCategoryRepository productCategoryRepository;
 
-    private final ProductRepository productRepository;
-
-
     public List<ProductCategoryResponse> findAll() {
         return productCategoryRepository.findAll().stream().map(productCategoryMapper::toResponse).toList();
     }

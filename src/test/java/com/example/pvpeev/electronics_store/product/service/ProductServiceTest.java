@@ -70,7 +70,7 @@ public class ProductServiceTest {
     public void testGetProductsFromExistingPath() {
         final PageRequest pageRequest = PageRequest.ofSize(10);
         final ProductCategoryEntity categoryEntity = new ProductCategoryEntity(1, "smartphones", "Smartphones", "Smartphones");
-        final ProductEntity savedEntity = new ProductEntity(UUID.randomUUID(), categoryEntity.getId(), 1, "Apple iPhone 17", "Apple iPhone 17", 1000, 10, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1");
+        final ProductEntity savedEntity = new ProductEntity(UUID.randomUUID(), categoryEntity.getId(), 1, "Apple iPhone 17", "Apple iPhone 17", 1000, 10, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1", false);
 
         when(productCategoryRepository.findByPath(categoryEntity.getPath())).thenReturn(Optional.of(categoryEntity));
         when(productRepository.findAllByProductCategoryId(categoryEntity.getId(), pageRequest)).thenReturn(new PageImpl<>(List.of(savedEntity)));
@@ -103,7 +103,7 @@ public class ProductServiceTest {
 
         verify(productCategoryRepository, times(1)).findByPath(path);
         verify(blobStorageService, times(0)).getFileUrl(eq(PRODUCT_THUMBNAILS_STORAGE.getValue()), any(UUID.class));
-        verify(productMapper, times(0)).toEntity(eq(productRequest), any(Integer.class), any(String.class));
+        verify(productMapper, times(0)).toEntity(eq(productRequest), any(Integer.class), any(String.class), eq(false));
         verify(productRepository, times(0)).save(any(ProductEntity.class));
         verify(blobStorageService, times(0)).uploadFile(eq(PRODUCT_THUMBNAILS_STORAGE.getValue()), any(UUID.class), eq(image));
         verify(productRepository, times(0)).deleteById(any(UUID.class));
@@ -113,8 +113,8 @@ public class ProductServiceTest {
     public void testCreateByPathFileUploadFails() {
         final ProductCategoryEntity categoryEntity = new ProductCategoryEntity(1, "smartphones", "Smartphones", "Smartphones");
         final ProductRequest productRequest = new ProductRequest(1, "Apple iPhone 17", "Apple iPhone 17", 1000, 10);
-        final ProductEntity productToSave = new ProductEntity(null, categoryEntity.getId(), productRequest.getProductBrandId(), productRequest.getName(), productRequest.getDescription(), productRequest.getPrice(), productRequest.getQuantityAvailable(), "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1");
-        final ProductEntity savedProduct = new ProductEntity(UUID.randomUUID(), productToSave.getProductCategoryId(), productToSave.getProductBrandId(), productToSave.getName(), productToSave.getDescription(), productToSave.getPrice(), productToSave.getQuantityAvailable(), productToSave.getThumbnailImageUrl());
+        final ProductEntity productToSave = new ProductEntity(null, categoryEntity.getId(), productRequest.getProductBrandId(), productRequest.getName(), productRequest.getDescription(), productRequest.getPrice(), productRequest.getQuantityAvailable(), "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1", false);
+        final ProductEntity savedProduct = new ProductEntity(UUID.randomUUID(), productToSave.getProductCategoryId(), productToSave.getProductBrandId(), productToSave.getName(), productToSave.getDescription(), productToSave.getPrice(), productToSave.getQuantityAvailable(), productToSave.getThumbnailImageUrl(), false);
         final MockMultipartFile image = new MockMultipartFile("test", (byte[]) null);
 
         when(productCategoryRepository.findByPath(categoryEntity.getPath())).thenReturn(Optional.of(categoryEntity));
@@ -129,7 +129,7 @@ public class ProductServiceTest {
 
         verify(productCategoryRepository, times(1)).findByPath(categoryEntity.getPath());
         verify(blobStorageService, times(1)).getFileUrl(eq(PRODUCT_THUMBNAILS_STORAGE.getValue()), any(UUID.class));
-        verify(productMapper, times(1)).toEntity(productRequest, categoryEntity.getId(), productToSave.getThumbnailImageUrl());
+        verify(productMapper, times(1)).toEntity(productRequest, categoryEntity.getId(), productToSave.getThumbnailImageUrl(), false);
         verify(productRepository, times(1)).save(productToSave);
         verify(blobStorageService, times(1)).uploadFile(eq(PRODUCT_THUMBNAILS_STORAGE.getValue()), any(UUID.class), eq(image));
         verify(productRepository, times(1)).deleteById(any(UUID.class));
@@ -139,8 +139,8 @@ public class ProductServiceTest {
     public void testCreateByPathFileUpload() {
         final ProductCategoryEntity categoryEntity = new ProductCategoryEntity(1, "smartphones", "Smartphones", "Smartphones");
         final ProductRequest productRequest = new ProductRequest(1, "Apple iPhone 17", "Apple iPhone 17", 1000, 10);
-        final ProductEntity productToSave = new ProductEntity(null, categoryEntity.getId(), productRequest.getProductBrandId(), productRequest.getName(), productRequest.getDescription(), productRequest.getPrice(), productRequest.getQuantityAvailable(), "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1");
-        final ProductEntity savedProduct = new ProductEntity(UUID.randomUUID(), productToSave.getProductCategoryId(), productToSave.getProductBrandId(), productToSave.getName(), productToSave.getDescription(), productToSave.getPrice(), productToSave.getQuantityAvailable(), productToSave.getThumbnailImageUrl());
+        final ProductEntity productToSave = new ProductEntity(null, categoryEntity.getId(), productRequest.getProductBrandId(), productRequest.getName(), productRequest.getDescription(), productRequest.getPrice(), productRequest.getQuantityAvailable(), "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1", false);
+        final ProductEntity savedProduct = new ProductEntity(UUID.randomUUID(), productToSave.getProductCategoryId(), productToSave.getProductBrandId(), productToSave.getName(), productToSave.getDescription(), productToSave.getPrice(), productToSave.getQuantityAvailable(), productToSave.getThumbnailImageUrl(), false);
         final MockMultipartFile image = new MockMultipartFile("test", (byte[]) null);
 
         when(productCategoryRepository.findByPath(categoryEntity.getPath())).thenReturn(Optional.of(categoryEntity));
@@ -151,7 +151,7 @@ public class ProductServiceTest {
 
         verify(productCategoryRepository, times(1)).findByPath(categoryEntity.getPath());
         verify(blobStorageService, times(1)).getFileUrl(eq(PRODUCT_THUMBNAILS_STORAGE.getValue()), any(UUID.class));
-        verify(productMapper, times(1)).toEntity(productRequest, categoryEntity.getId(), productToSave.getThumbnailImageUrl());
+        verify(productMapper, times(1)).toEntity(productRequest, categoryEntity.getId(), productToSave.getThumbnailImageUrl(), false);
         verify(productRepository, times(1)).save(productToSave);
         verify(blobStorageService, times(1)).uploadFile(eq(PRODUCT_THUMBNAILS_STORAGE.getValue()), any(UUID.class), eq(image));
         verify(productRepository, times(0)).deleteById(any(UUID.class));
@@ -160,9 +160,9 @@ public class ProductServiceTest {
     @Test
     public void testDeleteByUnexistingIdThrowsException() {
         final UUID id = UUID.randomUUID();
-        when(productRepository.deleteByIdWithCount(id)).thenReturn(0);
+        when(productRepository.softDeleteById(id)).thenReturn(0);
 
-        final RuntimeException exception = catchRuntimeException(() -> productService.deleteById(id));
+        final RuntimeException exception = catchRuntimeException(() -> productService.softDeleteById(id));
         assertThat(exception)
                 .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
                 .isInstanceOf(ResourceNotFoundException.class);
@@ -171,8 +171,8 @@ public class ProductServiceTest {
     @Test
     public void testDeleteById() {
         final UUID id = UUID.randomUUID();
-        when(productRepository.deleteByIdWithCount(id)).thenReturn(1);
+        when(productRepository.softDeleteById(id)).thenReturn(1);
 
-        productService.deleteById(id);
+        productService.softDeleteById(id);
     }
 }

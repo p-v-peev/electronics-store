@@ -50,7 +50,7 @@ public class ProductService {
         }
         final UUID key = UUID.randomUUID();
         final String imageUrl = blobStorageService.getFileUrl(PRODUCT_THUMBNAILS_STORAGE.getValue(), key);
-        final ProductEntity save = productRepository.save(productMapper.toEntity(request, entity.get().getId(), imageUrl));
+        final ProductEntity save = productRepository.save(productMapper.toEntity(request, entity.get().getId(), imageUrl, false));
 
         try {
             blobStorageService.uploadFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), key, image);
@@ -60,8 +60,8 @@ public class ProductService {
         }
     }
 
-    public void deleteById(UUID id) {
-        final int result = productRepository.deleteByIdWithCount(id);
+    public void softDeleteById(UUID id) {
+        final int result = productRepository.softDeleteById(id);
         if (result == 0) {
             throw new ResourceNotFoundException();
         }

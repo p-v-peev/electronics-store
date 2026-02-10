@@ -1,6 +1,5 @@
 package com.example.pvpeev.electronics_store.product.mapper;
 
-import com.example.pvpeev.electronics_store.product.dto.ProductImageRequest;
 import com.example.pvpeev.electronics_store.product.dto.ProductImageResponse;
 import com.example.pvpeev.electronics_store.product.entity.ProductImageEntity;
 import org.mapstruct.Mapper;
@@ -14,6 +13,6 @@ public interface ProductImageMapper {
     ProductImageResponse toResponse(ProductImageEntity entity);
 
     @Mapping(target = "id", ignore = true)
-    ProductImageEntity toEntity(ProductImageRequest request, UUID productId, String imageUrl);
+    ProductImageEntity toEntity(UUID productId, String imageUrl);
 
 }

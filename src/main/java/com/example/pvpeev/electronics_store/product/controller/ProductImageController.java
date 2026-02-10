@@ -21,9 +21,9 @@ public class ProductImageController {
 
     private final ProductImageService productImageService;
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
-        productImageService.delete(id);
+    @DeleteMapping("/{imageId}")
+    public ResponseEntity<Void> delete(@PathVariable("imageId") UUID imageId) {
+        productImageService.delete(imageId);
         return ResponseEntity.noContent().build();
     }
 }

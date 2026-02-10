@@ -96,12 +96,12 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testDeleteByIdUnexistingUserThrowsException() {
+    public void testSoftDeleteByIdUnexistingUserThrowsException() {
         final UUID userId = UUID.randomUUID();
 
         when(userRepository.softDeleteUser(userId)).thenReturn(0);
 
-        final RuntimeException exception = catchRuntimeException(() -> userService.deleteById(userId));
+        final RuntimeException exception = catchRuntimeException(() -> userService.softDeleteById(userId));
         assertThat(exception)
                 .as("Exception must be thrown to feed properly the controller advice, so the client gets HTTP 404")
                 .isInstanceOf(ResourceNotFoundException.class);
@@ -118,7 +118,7 @@ public class UserServiceTest {
 
         when(userRepository.softDeleteUser(userId)).thenReturn(1);
 
-        userService.deleteById(userId);
+        userService.softDeleteById(userId);
 
         final InOrder inOrder = inOrder(userAddressRepository, userAuthorityRepository, userRepository);
         inOrder.verify(userAddressRepository, times(1)).deleteByUserId(userId);

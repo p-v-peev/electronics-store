@@ -25,10 +25,12 @@ public class ProductEntity {
 
     private final String description;
 
-    private final int price;
+    private final Integer price;
 
-    private final int quantityAvailable;
+    private final Integer quantityAvailable;
 
     private final String thumbnailImageUrl;
+
+    private final boolean deleted;
 
 }

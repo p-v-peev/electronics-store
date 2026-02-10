@@ -69,7 +69,7 @@ public class ProductCategoryRepositoryTest extends BaseRepositoryTest {
     public void testDeleteCategoryWithProductsThrowsException() {
         final ProductCategoryEntity smartphones = productCategoryRepository.save(new ProductCategoryEntity(null, "smartphones", "Smartphones", "Smartphones description"));
         final ProductBrandEntity brand = productBrandRepository.save(new ProductBrandEntity(null, "Apple"));
-        productRepository.save(new ProductEntity(null, smartphones.getId(), brand.getId(), "Apple iPhone 17", "Apple iPhone 17", 1000, 10, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
+        productRepository.save(new ProductEntity(null, smartphones.getId(), brand.getId(), "Apple iPhone 17", "Apple iPhone 17", 1000, 10, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1", false));
 
         final RuntimeException exception = catchRuntimeException(() -> productCategoryRepository.deleteById(smartphones.getId()));
         assertThat(exception)

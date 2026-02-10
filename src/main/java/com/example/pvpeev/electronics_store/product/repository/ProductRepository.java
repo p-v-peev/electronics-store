@@ -15,8 +15,10 @@ import java.util.UUID;
 public interface ProductRepository extends ListCrudRepository<ProductEntity, UUID>, ListPagingAndSortingRepository<ProductEntity, UUID> {
 
     @Modifying
-    @Query("DELETE FROM product WHERE id = :id")
-    int deleteByIdWithCount(UUID id);
+    @Query("UPDATE product SET deleted = true WHERE id = :id")
+    int softDeleteById(UUID id);
+
+    boolean existsByIdAndDeletedIsFalse(UUID id);
 
     Page<ProductEntity> findAllByProductCategoryId(Integer productCategoryId, Pageable pageable);
 

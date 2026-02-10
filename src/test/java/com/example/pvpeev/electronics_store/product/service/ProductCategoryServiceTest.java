@@ -25,9 +25,6 @@ public class ProductCategoryServiceTest {
     @Mock
     private ProductCategoryRepository productCategoryRepository;
 
-    @Mock
-    private ProductRepository productRepository;
-
     @Spy
     private ProductCategoryMapper productCategoryMapper = new ProductCategoryMapperImpl();
 

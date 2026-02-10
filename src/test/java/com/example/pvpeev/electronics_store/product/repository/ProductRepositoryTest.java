@@ -117,7 +117,7 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testDeleteByUnexistingIdReturnsZero() {
-        assertThat(productRepository.deleteByIdWithCount(UUID.randomUUID()))
+        assertThat(productRepository.softDeleteById(UUID.randomUUID()))
                 .as("Nothing must be deleted")
                 .isEqualTo(0);
     }
@@ -129,17 +129,39 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
         final ProductEntity productEntity1 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
         final ProductEntity productEntity2 = productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 17", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a2"));
 
-        assertThat(productRepository.deleteByIdWithCount(productEntity1.getId()))
+        assertThat(productRepository.softDeleteById(productEntity1.getId()))
                 .as("Exactly one item must be deleted")
                 .isEqualTo(1);
 
-        assertThat(productRepository.deleteByIdWithCount(productEntity2.getId()))
+        assertThat(productRepository.softDeleteById(productEntity2.getId()))
                 .as("Exactly one item must be deleted")
                 .isEqualTo(1);
+
+        assertThat(productRepository.existsByIdAndDeletedIsFalse(productEntity1.getId()))
+                .as("The item must be soft deleted")
+                .isFalse();
+
+        assertThat(productRepository.existsByIdAndDeletedIsFalse(productEntity2.getId()))
+                .as("The item must be soft deleted")
+                .isFalse();
+
+        assertThat(productRepository.findById(productEntity1.getId()))
+                .as("The item must be soft deleted, but still in the database")
+                .isNotEmpty()
+                .get()
+                .extracting(ProductEntity::isDeleted)
+                .isEqualTo(true);
+
+        assertThat(productRepository.findById(productEntity2.getId()))
+                .as("The item must be soft deleted, but still in the database")
+                .isNotEmpty()
+                .get()
+                .extracting(ProductEntity::isDeleted)
+                .isEqualTo(true);
 
         assertThat(productRepository.findAll())
-                .as("The list must be empty")
-                .isEmpty();
+                .as("The items must be sof deleted, but still in the database")
+                .hasSize(2);
     }
 
     @Test
@@ -170,7 +192,7 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
     }
 
     private static @NotNull ProductEntity getProductEntity(Integer productCategoryId, Integer productBrandId, String product, String thumbnailUrl) {
-        return new ProductEntity(null, productCategoryId, productBrandId, product, product, 1200, 10, thumbnailUrl);
+        return new ProductEntity(null, productCategoryId, productBrandId, product, product, 1200, 10, thumbnailUrl, false);
     }
 
     private static @NotNull ProductCategoryEntity getProductCategoryEntity() {

@@ -2,7 +2,6 @@ package com.example.pvpeev.electronics_store.product.service;
 
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
 import com.example.pvpeev.electronics_store.blob.BlobStorageService;
-import com.example.pvpeev.electronics_store.product.dto.ProductImageRequest;
 import com.example.pvpeev.electronics_store.product.dto.ProductImageResponse;
 import com.example.pvpeev.electronics_store.product.entity.ProductImageEntity;
 import com.example.pvpeev.electronics_store.product.mapper.ProductImageMapper;
@@ -10,6 +9,7 @@ import com.example.pvpeev.electronics_store.product.repository.ProductImageRepos
 import com.example.pvpeev.electronics_store.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,20 +28,24 @@ public class ProductImageService {
 
     private final BlobStorageService blobStorageService;
 
-    public List<ProductImageResponse> getByProductId(UUID id) {
-        final boolean exists = productRepository.existsById(id);
+    public List<ProductImageResponse> getByProductId(UUID productId) {
+        final boolean exists = productRepository.existsByIdAndDeletedIsFalse(productId);
         if (!exists) {
             throw new ResourceNotFoundException();
         }
-        return productImageRepository.findAllByProductId(id).stream().map(productImageMapper::toResponse).toList();
+        return productImageRepository.findAllByProductId(productId).stream().map(productImageMapper::toResponse).toList();
     }
 
-    public ProductImageResponse create(ProductImageRequest imageRequest, UUID productId) {
+    public ProductImageResponse create(MultipartFile image, UUID productId) {
+        final boolean exists = productRepository.existsByIdAndDeletedIsFalse(productId);
+        if (!exists) {
+            throw new ResourceNotFoundException();
+        }
         final UUID key = UUID.randomUUID();
         final String imageUrl = blobStorageService.getFileUrl(PRODUCT_IMAGES_STORAGE.getValue(), key);
-        final ProductImageEntity savedEntity = productImageRepository.save(productImageMapper.toEntity(imageRequest, productId, imageUrl));
+        final ProductImageEntity savedEntity = productImageRepository.save(productImageMapper.toEntity(productId, imageUrl));
         try {
-            blobStorageService.uploadFile(PRODUCT_IMAGES_STORAGE.getValue(), key, imageRequest.getImage());
+            blobStorageService.uploadFile(PRODUCT_IMAGES_STORAGE.getValue(), key, image);
         } catch (Exception e) {
             productImageRepository.deleteById(savedEntity.getId());
             throw e;

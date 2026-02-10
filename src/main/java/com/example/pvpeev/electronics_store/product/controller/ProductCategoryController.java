@@ -53,7 +53,7 @@ public class ProductCategoryController {
     }
 
     @PostMapping("/{path}/products")
-    public ResponseEntity<ProductResponse> create(@RequestPart("request") ProductRequest request, @RequestPart("image") MultipartFile image, @PathVariable("path") String path, UriComponentsBuilder ucb) {
+    public ResponseEntity<Void> create(@RequestPart("request") ProductRequest request, @RequestPart("image") MultipartFile image, @PathVariable("path") String path, UriComponentsBuilder ucb) {
         productService.create(request, image, path);
         return ResponseEntity.created(ucb.path(PATH).pathSegment("{path}", "products").build(path)).build();
     }

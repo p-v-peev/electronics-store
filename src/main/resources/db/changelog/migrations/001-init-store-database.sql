@@ -24,7 +24,8 @@ CREATE TABLE "product" (
   "description" varchar(700) NOT NULL,
   "thumbnail_image_url" varchar(1000) UNIQUE NOT NULL,
   "price" integer NOT NULL,
-  "quantity_available" integer NOT NULL
+  "quantity_available" integer NOT NULL,
+  "deleted" boolean NOT NULL
 );
 
 CREATE TABLE "payment_type" (
@@ -81,7 +82,7 @@ CREATE TABLE "store_user" (
   "account_expired" boolean NOT NULL DEFAULT false,
   "account_locked" boolean NOT NULL DEFAULT false,
   "credentials_expired" boolean NOT NULL DEFAULT false,
-  "enabled" boolean NOT NULL DEFAULT true
+  "enabled" boolean NOT NULL
 );
 
 CREATE TABLE "user_address" (
