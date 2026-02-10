@@ -62,7 +62,7 @@ public class ProductServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
 
         verify(productCategoryRepository, times(1)).findByPath(path);
-        verify(productRepository, times(0)).findAllByProductCategoryId(any(Integer.class), eq(pageRequest));
+        verify(productRepository, times(0)).findAllByProductCategoryIdAndDeletedIsFalse(any(Integer.class), eq(pageRequest));
         verify(productMapper, times(0)).toResponse(any(ProductEntity.class));
     }
 
@@ -73,7 +73,7 @@ public class ProductServiceTest {
         final ProductEntity savedEntity = new ProductEntity(UUID.randomUUID(), categoryEntity.getId(), 1, "Apple iPhone 17", "Apple iPhone 17", 1000, 10, "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1", false);
 
         when(productCategoryRepository.findByPath(categoryEntity.getPath())).thenReturn(Optional.of(categoryEntity));
-        when(productRepository.findAllByProductCategoryId(categoryEntity.getId(), pageRequest)).thenReturn(new PageImpl<>(List.of(savedEntity)));
+        when(productRepository.findAllByProductCategoryIdAndDeletedIsFalse(categoryEntity.getId(), pageRequest)).thenReturn(new PageImpl<>(List.of(savedEntity)));
 
         final ProductResponse expectedResponse = new ProductResponse(savedEntity.getId(), savedEntity.getProductCategoryId(), savedEntity.getProductBrandId(), savedEntity.getName(), savedEntity.getDescription(), savedEntity.getPrice(), savedEntity.getQuantityAvailable(), savedEntity.getThumbnailImageUrl());
         assertThat(productService.getAll(categoryEntity.getPath(), pageRequest))
@@ -83,7 +83,7 @@ public class ProductServiceTest {
                 .isEqualTo(expectedResponse);
 
         verify(productCategoryRepository, times(1)).findByPath(categoryEntity.getPath());
-        verify(productRepository, times(1)).findAllByProductCategoryId(categoryEntity.getId(), pageRequest);
+        verify(productRepository, times(1)).findAllByProductCategoryIdAndDeletedIsFalse(categoryEntity.getId(), pageRequest);
         verify(productMapper, times(1)).toResponse(savedEntity);
     }
 

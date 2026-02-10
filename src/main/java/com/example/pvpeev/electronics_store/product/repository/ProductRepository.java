@@ -20,7 +20,5 @@ public interface ProductRepository extends ListCrudRepository<ProductEntity, UUI
 
     boolean existsByIdAndDeletedIsFalse(UUID id);
 
-    Page<ProductEntity> findAllByProductCategoryId(Integer productCategoryId, Pageable pageable);
-
-    boolean existsByProductCategoryId(Integer id);
+    Page<ProductEntity> findAllByProductCategoryIdAndDeletedIsFalse(Integer productCategoryId, Pageable pageable);
 }

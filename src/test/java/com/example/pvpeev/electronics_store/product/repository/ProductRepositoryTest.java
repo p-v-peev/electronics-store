@@ -28,35 +28,8 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
     private ProductCategoryRepository productCategoryRepository;
 
     @Test
-    public void testExistsByProductCategoryReturnsTrue() {
-        final ProductBrandEntity productBrandEntity = productBrandRepository.save(getProductBrandEntity());
-        final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
-        productRepository.save(getProductEntity(productCategoryEntity, productBrandEntity, "iPhone 16", "http://localhost:9000/product-thumbnails/e619ed60-3cf9-4c5f-9c3d-84a8b1be30a1"));
-
-        assertThat(productRepository.existsByProductCategoryId(productCategoryEntity.getId()))
-                .as("The result must be true, because of the product inserted above")
-                .isTrue();
-    }
-
-    @Test
-    public void testExistsByProductCategoryReturnsFalseIfThereAreNoProducts() {
-        final ProductCategoryEntity productCategoryEntity = productCategoryRepository.save(getProductCategoryEntity());
-
-        assertThat(productRepository.existsByProductCategoryId(productCategoryEntity.getId()))
-                .as("There are no products in this category")
-                .isFalse();
-    }
-
-    @Test()
-    public void testExistsByProductCategoryReturnsFalseOnUnexistingCategory() {
-        assertThat(productRepository.existsByProductCategoryId(1))
-                .as("There are no products in this category")
-                .isFalse();
-    }
-
-    @Test
     public void findAllByProductCategoryIdReturnEmptyPageableOnMissingCategory() {
-        assertThat(productRepository.findAllByProductCategoryId(1, PageRequest.ofSize(10)))
+        assertThat(productRepository.findAllByProductCategoryIdAndDeletedIsFalse(1, PageRequest.ofSize(10)))
                 .as("The page must be empty, because there are no products in this category")
                 .hasSize(0);
 
@@ -72,14 +45,14 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
         // iPhone 16 is less than iPhone 17
         final Sort.TypedSort<String> sort = Sort.sort(ProductEntity.class).by(ProductEntity::getName);
 
-        assertThat(productRepository.findAllByProductCategoryId(productCategoryEntity.getId(), PageRequest.of(0, 1, sort.ascending())))
+        assertThat(productRepository.findAllByProductCategoryIdAndDeletedIsFalse(productCategoryEntity.getId(), PageRequest.of(0, 1, sort.ascending())))
                 .as("The page size must be one")
                 .singleElement()
                 .as("The page must contain only the first product added above")
                 .isEqualTo(productEntity1);
 
 
-        assertThat(productRepository.findAllByProductCategoryId(productCategoryEntity.getId(), PageRequest.of(0, 1, sort.descending())))
+        assertThat(productRepository.findAllByProductCategoryIdAndDeletedIsFalse(productCategoryEntity.getId(), PageRequest.of(0, 1, sort.descending())))
                 .as("The page size must be one")
                 .singleElement()
                 .as("The page must contain only the second product added above")
@@ -95,20 +68,20 @@ public class ProductRepositoryTest extends BaseRepositoryTest {
 
         final Sort sort = Sort.sort(ProductEntity.class).by(ProductEntity::getName).ascending();
 
-        assertThat(productRepository.findAllByProductCategoryId(productCategoryEntity.getId(), PageRequest.of(0, 1, sort)))
+        assertThat(productRepository.findAllByProductCategoryIdAndDeletedIsFalse(productCategoryEntity.getId(), PageRequest.of(0, 1, sort)))
                 .as("The page size must be one")
                 .singleElement()
                 .as("The page must contain only the first product added above")
                 .isEqualTo(productEntity1);
 
 
-        assertThat(productRepository.findAllByProductCategoryId(productCategoryEntity.getId(), PageRequest.of(1, 1, sort)))
+        assertThat(productRepository.findAllByProductCategoryIdAndDeletedIsFalse(productCategoryEntity.getId(), PageRequest.of(1, 1, sort)))
                 .as("The page must be one")
                 .singleElement()
                 .as("The page must contain only the second product added above")
                 .isEqualTo(productEntity2);
 
-        assertThat(productRepository.findAllByProductCategoryId(productCategoryEntity.getId(), PageRequest.of(0, 2)))
+        assertThat(productRepository.findAllByProductCategoryIdAndDeletedIsFalse(productCategoryEntity.getId(), PageRequest.of(0, 2)))
                 .as("The method must return the two products saved above")
                 .hasSize(2)
                 .as("The page must contain the both products")

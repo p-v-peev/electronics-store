@@ -39,28 +39,30 @@ public class ProductService {
         if (entity.isEmpty()) {
             throw new ResourceNotFoundException();
         }
-        final Page<ProductEntity> productEntitiesPage = productRepository.findAllByProductCategoryId(entity.get().getId(), pageable);
+        final Page<ProductEntity> productEntitiesPage = productRepository.findAllByProductCategoryIdAndDeletedIsFalse(entity.get().getId(), pageable);
         return productEntitiesPage.map(productMapper::toResponse);
     }
 
-    public void create(ProductRequest request, MultipartFile image, String path) {
+    public ProductResponse create(ProductRequest request, MultipartFile image, String path) {
         final Optional<ProductCategoryEntity> entity = productCategoryRepository.findByPath(path);
         if (entity.isEmpty()) {
             throw new BadRequestException();
         }
         final UUID key = UUID.randomUUID();
         final String imageUrl = blobStorageService.getFileUrl(PRODUCT_THUMBNAILS_STORAGE.getValue(), key);
-        final ProductEntity save = productRepository.save(productMapper.toEntity(request, entity.get().getId(), imageUrl, false));
+        final ProductEntity savedEntity = productRepository.save(productMapper.toEntity(request, entity.get().getId(), imageUrl, false));
 
         try {
             blobStorageService.uploadFile(PRODUCT_THUMBNAILS_STORAGE.getValue(), key, image);
         } catch (Exception e) {
-            productRepository.deleteById(save.getId());
+            productRepository.deleteById(savedEntity.getId());
             throw e;
         }
+        return productMapper.toResponse(savedEntity);
     }
 
     public void softDeleteById(UUID id) {
+        //TODO delete all product images
         final int result = productRepository.softDeleteById(id);
         if (result == 0) {
             throw new ResourceNotFoundException();

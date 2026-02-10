@@ -53,15 +53,8 @@ public class ProductCategoryController {
     }
 
     @PostMapping("/{path}/products")
-    public ResponseEntity<Void> create(@RequestPart("request") ProductRequest request, @RequestPart("image") MultipartFile image, @PathVariable("path") String path, UriComponentsBuilder ucb) {
-        productService.create(request, image, path);
-        return ResponseEntity.created(ucb.path(PATH).pathSegment("{path}", "products").build(path)).build();
-    }
-
-    // TODO handle delete
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable("id") Integer id) {
-        productCategoryService.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ProductResponse> create(@RequestPart("request") ProductRequest request, @RequestPart("image") MultipartFile image, @PathVariable("path") String path, UriComponentsBuilder ucb) {
+        final ProductResponse productResponse = productService.create(request, image, path);
+        return ResponseEntity.created(ucb.path(PATH).pathSegment("{path}", "products").build(path)).body(productResponse);
     }
 }
