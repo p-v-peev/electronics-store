@@ -9,6 +9,7 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -20,6 +21,16 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 10MB
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      lettuce:
+        pool:
+          max-active: 64
+          max-idle: 20
+          min-idle: 10
+          max-wait: 1000ms
 logging:
   level:
     org.springframework.jdbc.core: DEBUG

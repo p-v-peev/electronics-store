@@ -14,13 +14,11 @@ import java.util.UUID;
 public class OrderStatusEntity {
 
     @Id
-    private final UUID id;
+    private final Long id;
 
     private final UUID orderId;
 
-    private final UUID deliveryStatusId;
+    private final Integer orderStatus;
 
     private final ZonedDateTime statusUpdateDate;
-
-    private final String statusDescription;
 }

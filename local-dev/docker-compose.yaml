@@ -28,7 +28,7 @@ services:
     command: server /data --console-address ":9001"
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -47,7 +47,11 @@ services:
       /usr/bin/mc anonymous set download store-minio/product-images;
       exit 0;
       "
-
+  redis-node:
+    image: redis:8.6.0
+    container_name: redis-node
+    ports:
+      - "6379:6379"
 # Define the named volumes here
 volumes:
   postgres_data:

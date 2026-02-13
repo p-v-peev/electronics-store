@@ -2,7 +2,7 @@ package com.example.pvpeev.electronics_store.auth.service;
 
 import com.example.pvpeev.electronics_store.advice.exception.BadRequestException;
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
-import com.example.pvpeev.electronics_store.auth.authorities.Authorities;
+import com.example.pvpeev.electronics_store.auth.authorities.Authority;
 import com.example.pvpeev.electronics_store.auth.authorities.AuthoritiesResolver;
 import com.example.pvpeev.electronics_store.auth.dto.AuthorityResponse;
 import com.example.pvpeev.electronics_store.auth.entity.UserAuthorityEntity;
@@ -41,20 +41,20 @@ public class UserAuthorityService {
     }
 
     public AuthorityResponse grantUserAuthority(UUID userId, Integer authorityId) {
-        final Authorities authorities = authoritiesResolver.resolveById(authorityId);
-        if (authorities == null) {
+        final Authority authority = authoritiesResolver.resolveById(authorityId);
+        if (authority == null) {
             throw new BadRequestException();
         }
 
         final UserAuthorityEntity userAuthority = new UserAuthorityEntity(null, userId, authorityId);
         userAuthorityRepository.save(userAuthority);
 
-        return authorityMapper.toResponse(authorities);
+        return authorityMapper.toResponse(authority);
     }
 
     public void revokeUserAuthority(UUID userId, Integer authorityId) {
-        final Authorities authorities = authoritiesResolver.resolveById(authorityId);
-        if (Authorities.ROLE_STORE_USER == authorities || authorities == null) {
+        final Authority authority = authoritiesResolver.resolveById(authorityId);
+        if (Authority.ROLE_STORE_USER == authority || authority == null) {
             throw new BadRequestException();
         }
 

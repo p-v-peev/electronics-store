@@ -22,11 +22,11 @@ public class OrderEntity {
 
     private final ZonedDateTime orderDate;
 
-    private final UUID paymentTypeId;
+    private final Integer paymentType;
 
     private final String phoneNumber;
 
     private final String trackingCode;
 
-    private final UUID shippingMethodId;
+    private final Integer shippingMethod;
 }

@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.ROLE_STORE_USER;
+import static com.example.pvpeev.electronics_store.auth.authorities.Authority.ROLE_STORE_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
 import static org.mockito.Mockito.*;

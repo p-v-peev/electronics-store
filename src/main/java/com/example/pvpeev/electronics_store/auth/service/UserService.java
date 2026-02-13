@@ -1,7 +1,7 @@
 package com.example.pvpeev.electronics_store.auth.service;
 
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
-import com.example.pvpeev.electronics_store.auth.authorities.Authorities;
+import com.example.pvpeev.electronics_store.auth.authorities.Authority;
 import com.example.pvpeev.electronics_store.auth.authorities.AuthoritiesResolver;
 import com.example.pvpeev.electronics_store.auth.dto.UserRequest;
 import com.example.pvpeev.electronics_store.auth.dto.UserResponse;
@@ -36,7 +36,7 @@ public class UserService {
     public UUID create(UserRequest request) {
         final UserEntity entity = userMapper.toEntity(request, true);
         final UUID id = userRepository.save(entity).getId();
-        userAuthorityRepository.save(new UserAuthorityEntity(null, id, Authorities.ROLE_STORE_USER.getId()));
+        userAuthorityRepository.save(new UserAuthorityEntity(null, id, Authority.ROLE_STORE_USER.getId()));
         return id;
     }
 

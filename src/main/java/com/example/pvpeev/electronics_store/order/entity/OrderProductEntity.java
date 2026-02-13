@@ -13,7 +13,7 @@ import java.util.UUID;
 public class OrderProductEntity {
 
     @Id
-    private final UUID id;
+    private final Long id;
 
     private final UUID orderId;
 

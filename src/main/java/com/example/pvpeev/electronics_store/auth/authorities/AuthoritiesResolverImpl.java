@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 @Component
 public class AuthoritiesResolverImpl implements AuthoritiesResolver {
 
-    private static final Map<Integer, Authorities> MAP = Arrays.stream(Authorities.values()).collect(Collectors.toMap(Authorities::getId, Function.identity()));
+    private static final Map<Integer, Authority> MAP = Arrays.stream(Authority.values()).collect(Collectors.toMap(Authority::getId, Function.identity()));
 
     @Override
-    public Authorities resolveById(Integer id) {
+    public Authority resolveById(Integer id) {
         return MAP.get(id);
     }
 }

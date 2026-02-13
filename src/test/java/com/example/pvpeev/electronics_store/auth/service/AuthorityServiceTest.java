@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.*;
+import static com.example.pvpeev.electronics_store.auth.authorities.Authority.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;

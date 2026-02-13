@@ -2,7 +2,7 @@ package com.example.pvpeev.electronics_store.auth.service;
 
 import com.example.pvpeev.electronics_store.advice.exception.BadRequestException;
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
-import com.example.pvpeev.electronics_store.auth.authorities.Authorities;
+import com.example.pvpeev.electronics_store.auth.authorities.Authority;
 import com.example.pvpeev.electronics_store.auth.authorities.AuthoritiesResolver;
 import com.example.pvpeev.electronics_store.auth.authorities.AuthoritiesResolverImpl;
 import com.example.pvpeev.electronics_store.auth.dto.AuthorityResponse;
@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.ROLE_STORE_USER;
-import static com.example.pvpeev.electronics_store.auth.authorities.Authorities.ROLE_STORE_WAREHOUSE_WORKER;
+import static com.example.pvpeev.electronics_store.auth.authorities.Authority.ROLE_STORE_USER;
+import static com.example.pvpeev.electronics_store.auth.authorities.Authority.ROLE_STORE_WAREHOUSE_WORKER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
 import static org.mockito.Mockito.*;
@@ -62,7 +62,7 @@ public class UserAuthorityServiceTest {
         verify(userRepository, times(1)).findByIdAndEnabledIsTrue(userId);
         verify(userAuthorityRepository, times(0)).findAllByUserId(userId);
         verify(authoritiesResolver, times(0)).resolveById(anyInt());
-        verify(authorityMapper, times(0)).toResponse(any(Authorities.class));
+        verify(authorityMapper, times(0)).toResponse(any(Authority.class));
     }
 
     @Test
