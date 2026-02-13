@@ -47,11 +47,6 @@ services:
       /usr/bin/mc anonymous set download store-minio/product-images;
       exit 0;
       "
-  redis-node:
-    image: redis:8.6.0
-    container_name: redis-node
-    ports:
-      - "6379:6379"
 # Define the named volumes here
 volumes:
   postgres_data:

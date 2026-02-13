@@ -266,7 +266,7 @@ public class UserControllerTest {
     @Test
     public void testDeleteAuthorityToUnexistingUserReturnsNotFound() {
         assertThat(mockMvcTester.delete()
-                .uri(UserController.PATH + "/" + UUID.randomUUID() + "/authorities/2"))
+                .uri(UserController.PATH + "/" + UUID.randomUUID() + "/authorities/" + ROLE_STORE_WAREHOUSE_WORKER.getId()))
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
 

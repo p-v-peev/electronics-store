@@ -16,7 +16,7 @@ public interface UserRepository extends CrudRepository<UserEntity, UUID> {
     Optional<UserEntity> findByIdAndEnabledIsTrue(UUID id);
 
     @Query("""
-            SELECT su.id, su.email, su.password, su.account_expired, su.account_locked, su.credentials_expired, su.enabled, ARRAY_AGG(ua.authority_id) AS authority
+            SELECT su.id, su.email, su.password, su.account_expired, su.account_locked, su.credentials_expired, su.enabled, ARRAY_AGG(ua.authority_id) AS authorities
             FROM store_user su
             LEFT JOIN user_authority ua ON su.id = ua.user_id
             WHERE su.enabled = true AND su.email = :email GROUP BY su.id

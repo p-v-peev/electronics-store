@@ -29,12 +29,13 @@ public class AuthorityControllerTest {
                 .hasStatusOk()
                 .bodyJson()
                 .convertTo(list(AuthorityResponse.class))
-                .hasSize(4)
+                .hasSize(5)
                 .containsExactlyInAnyOrder(
                         authorityMapper.toResponse(ROLE_STORE_USER),
                         authorityMapper.toResponse(ROLE_STORE_WAREHOUSE_WORKER),
                         authorityMapper.toResponse(ROLE_STORE_PRODUCT_ADMIN),
-                        authorityMapper.toResponse(ROLE_STORE_AUTHORITY_ADMIN)
+                        authorityMapper.toResponse(ROLE_STORE_AUTHORITY_ADMIN),
+                        authorityMapper.toResponse(ROLE_ORDER_STATUS_ADMIN)
                 );
     }
 }

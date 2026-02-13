@@ -26,12 +26,13 @@ public class AuthorityServiceTest {
     @Test
     void testFindAllAuthorities() {
         assertThat(authorityService.findAll())
-                .hasSize(4)
+                .hasSize(5)
                 .containsExactlyInAnyOrder(
                         new AuthorityResponse(ROLE_STORE_USER.getId(), ROLE_STORE_USER.getAuthority(), ROLE_STORE_USER.getDescription()),
                         new AuthorityResponse(ROLE_STORE_WAREHOUSE_WORKER.getId(), ROLE_STORE_WAREHOUSE_WORKER.getAuthority(), ROLE_STORE_WAREHOUSE_WORKER.getDescription()),
                         new AuthorityResponse(ROLE_STORE_AUTHORITY_ADMIN.getId(), ROLE_STORE_AUTHORITY_ADMIN.getAuthority(), ROLE_STORE_AUTHORITY_ADMIN.getDescription()),
-                        new AuthorityResponse(ROLE_STORE_PRODUCT_ADMIN.getId(), ROLE_STORE_PRODUCT_ADMIN.getAuthority(), ROLE_STORE_PRODUCT_ADMIN.getDescription())
+                        new AuthorityResponse(ROLE_STORE_PRODUCT_ADMIN.getId(), ROLE_STORE_PRODUCT_ADMIN.getAuthority(), ROLE_STORE_PRODUCT_ADMIN.getDescription()),
+                        new AuthorityResponse(ROLE_ORDER_STATUS_ADMIN.getId(), ROLE_ORDER_STATUS_ADMIN.getAuthority(), ROLE_ORDER_STATUS_ADMIN.getDescription())
                 );
 
         verify(authorityMapper, times(1)).toResponse(ROLE_STORE_USER);
