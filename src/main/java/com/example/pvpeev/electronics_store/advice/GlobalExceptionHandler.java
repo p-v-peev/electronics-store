@@ -37,6 +37,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().build();
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Void> handleIllegalArgument(IllegalArgumentException exception) {
+        return ResponseEntity.badRequest().build();
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Void> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         final Throwable cause = ex.getRootCause();

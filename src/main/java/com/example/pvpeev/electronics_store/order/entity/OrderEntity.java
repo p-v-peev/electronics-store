@@ -2,16 +2,18 @@ package com.example.pvpeev.electronics_store.order.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Table(name = "order")
 @RequiredArgsConstructor
 @Getter
-public class OrderEntity {
+public class OrderEntity implements Persistable<UUID> {
 
     @Id
     private final UUID id;
@@ -20,13 +22,20 @@ public class OrderEntity {
 
     private final String orderAddress;
 
-    private final ZonedDateTime orderDate;
-
     private final Integer paymentType;
 
     private final String phoneNumber;
 
-    private final String trackingCode;
+    private final UUID trackingCode;
 
     private final Integer shippingMethod;
+
+    @Transient
+    @Setter
+    private boolean isNew = false;
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
 }

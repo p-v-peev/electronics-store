@@ -8,8 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum ShippingMethod {
 
     DHL(1, "DHL"),
-    SPEEDY(2, "Speedy"),
-    BOX_NOW(3, "BOX_NOW");
+    SPEEDY(2, "Speedy");
 
     private final Integer id;
     private final String name;

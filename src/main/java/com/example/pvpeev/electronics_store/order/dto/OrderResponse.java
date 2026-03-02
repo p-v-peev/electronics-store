@@ -3,16 +3,16 @@ package com.example.pvpeev.electronics_store.order.dto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Getter
-public class OrderRequest {
+public class OrderResponse {
+    private final UUID id;
     private final UUID userId;
     private final String orderAddress;
-    private final String paymentType;
+    private final Integer paymentType;
     private final String phoneNumber;
-    private final String shippingMethod;
-    private final List<OrderProductRequest> products;
+    private final UUID trackingCode;
+    private final Integer shippingMethod;
 }

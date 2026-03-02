@@ -7,15 +7,14 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
 
-@Table(name = "order_status")
+@Table(name = "warehouse_queue")
 @RequiredArgsConstructor
 @Getter
-public class OrderStatusEntity {
-
+public class WarehouseOrderEntity {
     @Id
     private final Long id;
 
     private final UUID orderId;
 
-    private final Integer orderStatus;
+    private final String binAddress;
 }
