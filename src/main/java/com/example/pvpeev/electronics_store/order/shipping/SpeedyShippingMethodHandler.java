@@ -12,8 +12,8 @@ public class SpeedyShippingMethodHandler implements ShippingMethodHandler {
     }
 
     @Override
-    public String registerOrder(UUID orderId) {
-        return UUID.randomUUID().toString();
+    public UUID registerOrder(UUID orderId) {
+        return UUID.randomUUID();
     }
 
     @Override

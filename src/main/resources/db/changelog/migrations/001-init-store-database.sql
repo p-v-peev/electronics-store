@@ -44,10 +44,10 @@ CREATE TABLE "order" (
   "user_id" uuid NOT NULL,
   "order_address" varchar(1000),
   "order_date" timestamptz NOT NULL DEFAULT (now()),
-  "payment_type" varchar(150) NOT NULL,
+  "payment_type" smallint NOT NULL,
   "phone_number" varchar(20) NOT NULL,
   "tracking_code" varchar(150),
-  "shipping_method" varchar(150) NOT NULL
+  "shipping_method" smallint NOT NULL
 );
 
 CREATE TABLE "order_product" (
