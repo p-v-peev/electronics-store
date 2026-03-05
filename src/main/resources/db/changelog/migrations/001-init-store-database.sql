@@ -1,6 +1,3 @@
---liquibase formatted sql
---changeset pvpeev:init-store-db
-
 CREATE TABLE "product_category" (
   "id" smallserial PRIMARY KEY,
   "path" varchar(100) UNIQUE NOT NULL,
@@ -32,18 +29,15 @@ CREATE TABLE "product" (
 );
 
 CREATE TABLE "order_status" (
-  "id" uuid PRIMARY KEY,
+  "id" bigserial PRIMARY KEY,
   "order_id" uuid NOT NULL,
-  "delivery_status" uuid NOT NULL,
-  "status_update_date" timestamptz NOT NULL DEFAULT (now()),
-  "status_description" varchar(1000) NOT NULL
+  "order_status" smallint NOT NULL
 );
 
 CREATE TABLE "order" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "user_id" uuid NOT NULL,
   "order_address" varchar(1000),
-  "order_date" timestamptz NOT NULL DEFAULT (now()),
   "payment_type" smallint NOT NULL,
   "phone_number" varchar(20) NOT NULL,
   "tracking_code" varchar(150),
@@ -51,7 +45,7 @@ CREATE TABLE "order" (
 );
 
 CREATE TABLE "order_product" (
-  "id" uuid PRIMARY KEY,
+  "id" bigserial PRIMARY KEY,
   "order_id" uuid NOT NULL,
   "product_id" uuid NOT NULL,
   "quantity" integer NOT NULL,
@@ -83,6 +77,12 @@ CREATE TABLE "user_authority" (
   "authority_id" smallint NOT NULL
 );
 
+CREATE TABLE "warehouse_queue" (
+  "id" bigserial PRIMARY KEY,
+  "order_id" uuid UNIQUE NOT NULL,
+  "bin_address" varchar(20)
+);
+
 CREATE UNIQUE INDEX ON "product_image" ("product_id", "image_url");
 
 CREATE INDEX ON "product" ("product_category_id", "product_brand_id");
@@ -94,6 +94,8 @@ CREATE UNIQUE INDEX ON "order_product" ("order_id", "product_id");
 CREATE UNIQUE INDEX ON "user_address" ("user_id", "address");
 
 CREATE UNIQUE INDEX ON "user_authority" ("user_id", "authority_id");
+
+ALTER TABLE "warehouse_queue" ADD CONSTRAINT "fk_warehouse_order_id" FOREIGN KEY ("order_id") REFERENCES "order" ("id");
 
 ALTER TABLE "product" ADD CONSTRAINT "fk_product_category" FOREIGN KEY ("product_category_id") REFERENCES "product_category" ("id");
 

@@ -3,11 +3,14 @@ package com.example.pvpeev.electronics_store.order.repository;
 import com.example.pvpeev.electronics_store.auth.entity.UserEntity;
 import com.example.pvpeev.electronics_store.auth.repository.UserRepository;
 import com.example.pvpeev.electronics_store.order.entity.OrderEntity;
+import com.example.pvpeev.electronics_store.order.payment.PaymentType;
+import com.example.pvpeev.electronics_store.order.shipping.ShippingMethod;
 import com.example.pvpeev.electronics_store.repository.BaseRepositoryTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import static com.example.pvpeev.electronics_store.order.payment.PaymentType.DEBIT_CARD;
@@ -37,7 +40,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testSetOrderTrackingCode() {
-        final UserEntity savedUser = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
+        final UserEntity savedUser = newUser();
         final UUID orderId = UUID.randomUUID();
         final OrderEntity orderToSave = new OrderEntity(orderId, savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId());
         orderToSave.setNew(true);
@@ -57,7 +60,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testUsingUnexistingShippingMethodThrowsException() {
-        final UserEntity savedUser = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
+        final UserEntity savedUser = newUser();
         final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, -1);
         orderToSave.setNew(true);
         final RuntimeException exception = catchRuntimeException(() -> orderRepository.save(orderToSave));
@@ -69,8 +72,19 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
     }
 
     @Test
+    public void testUsingAllShippingMethodsIsPossible() {
+        final UserEntity savedUser = newUser();
+        Arrays.stream(ShippingMethod.values())
+                .forEach(shippingMethod -> {
+                    final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, shippingMethod.getId());
+                    orderToSave.setNew(true);
+                    orderRepository.save(orderToSave);
+                });
+    }
+
+    @Test
     public void testUsingUnexistingPaymentMethodThrowsException() {
-        final UserEntity savedUser = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
+        final UserEntity savedUser = newUser();
         final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", -1, "00000000", null, DHL.getId());
         orderToSave.setNew(true);
         final RuntimeException exception = catchRuntimeException(() -> orderRepository.save(orderToSave));
@@ -79,5 +93,20 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .extracting(Throwable::getMessage)
                 .matches(s -> s.contains("check_payment_type"));
+    }
+
+    @Test
+    public void testUsingAllPaymentTypesIsPossible() {
+        final UserEntity savedUser = newUser();
+        Arrays.stream(PaymentType.values())
+                .forEach(paymentType -> {
+                    final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", paymentType.getId(), "00000000", null, DHL.getId());
+                    orderToSave.setNew(true);
+                    orderRepository.save(orderToSave);
+                });
+    }
+
+    private UserEntity newUser() {
+        return userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true));
     }
 }
