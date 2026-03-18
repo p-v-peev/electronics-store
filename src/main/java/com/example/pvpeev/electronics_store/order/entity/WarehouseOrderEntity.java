@@ -16,5 +16,5 @@ public class WarehouseOrderEntity {
 
     private final UUID orderId;
 
-    private final Integer bin_id;
+    private final Integer binId;
 }

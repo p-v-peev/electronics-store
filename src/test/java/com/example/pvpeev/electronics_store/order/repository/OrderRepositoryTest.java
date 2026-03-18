@@ -15,8 +15,7 @@ import java.util.UUID;
 
 import static com.example.pvpeev.electronics_store.order.payment.PaymentType.DEBIT_CARD;
 import static com.example.pvpeev.electronics_store.order.shipping.ShippingMethod.DHL;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchRuntimeException;
+import static org.assertj.core.api.Assertions.*;
 
 public class OrderRepositoryTest extends BaseRepositoryTest {
 
@@ -74,7 +73,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
         Arrays.stream(ShippingMethod.values())
                 .forEach(shippingMethod -> {
                     final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, shippingMethod.getId()).setNew();
-                    orderRepository.save(orderToSave);
+                    assertThatNoException().isThrownBy(() -> orderRepository.save(orderToSave));
                 });
     }
 
@@ -96,7 +95,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
         Arrays.stream(PaymentType.values())
                 .forEach(paymentType -> {
                     final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", paymentType.getId(), "00000000", null, DHL.getId()).setNew();
-                    orderRepository.save(orderToSave);
+                    assertThatNoException().isThrownBy(() -> orderRepository.save(orderToSave));
                 });
     }
 

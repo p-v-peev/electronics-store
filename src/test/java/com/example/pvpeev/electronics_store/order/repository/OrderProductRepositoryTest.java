@@ -20,8 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import java.util.UUID;
 
 import static com.example.pvpeev.electronics_store.order.shipping.ShippingMethod.DHL;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchRuntimeException;
+import static org.assertj.core.api.Assertions.*;
 
 class OrderProductRepositoryTest extends BaseRepositoryTest {
 
@@ -84,7 +83,7 @@ class OrderProductRepositoryTest extends BaseRepositoryTest {
         final UUID productId = productRepository.save(new ProductEntity(null, this.productCategory.getId(), this.productBrand.getId(), "Iphone 17", "Iphone 17", 1000, 10, "http://fake-url.local", false)).getId();
         final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), user.getId(), "Test address", PaymentType.DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
         final UUID orderId = orderRepository.save(orderEntity).getId();
-        orderProductRepository.save(new OrderProductEntity(null, orderId, productId, 10, 1000));
+        assertThatNoException().isThrownBy(() -> orderProductRepository.save(new OrderProductEntity(null, orderId, productId, 10, 1000)));
     }
 
     @Test
