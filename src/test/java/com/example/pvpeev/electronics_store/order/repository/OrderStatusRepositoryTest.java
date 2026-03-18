@@ -42,8 +42,7 @@ public class OrderStatusRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testAddingUnexistingStatusThrowsException() {
         final UserEntity savedUser = newUser();
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId());
-        orderToSave.setNew(true);
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
         final UUID orderId = orderRepository.save(orderToSave).getId();
 
         final RuntimeException exception = catchRuntimeException(() -> orderStatusRepository.save(new OrderStatusEntity(null, orderId, -1)));
@@ -57,8 +56,7 @@ public class OrderStatusRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testAddingAllExistingStatusesIsPossible() {
         final UserEntity savedUser = newUser();
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId());
-        orderToSave.setNew(true);
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
         final UUID orderId = orderRepository.save(orderToSave).getId();
         Arrays.stream(OrderStatus.values())
                 .forEach(orderStatus -> orderStatusRepository.save(new OrderStatusEntity(null, orderId, orderStatus.getId())));

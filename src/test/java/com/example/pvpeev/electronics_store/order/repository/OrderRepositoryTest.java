@@ -28,8 +28,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testAddingOrderForUnexistingUserThrowsException() {
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), UUID.randomUUID(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId());
-        orderToSave.setNew(true);
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), UUID.randomUUID(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
         final RuntimeException exception = catchRuntimeException(() -> orderRepository.save(orderToSave));
         assertThat(exception)
                 .as("Orders can't be placed by unexisting users")
@@ -42,8 +41,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
     public void testSetOrderTrackingCode() {
         final UserEntity savedUser = newUser();
         final UUID orderId = UUID.randomUUID();
-        final OrderEntity orderToSave = new OrderEntity(orderId, savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId());
-        orderToSave.setNew(true);
+        final OrderEntity orderToSave = new OrderEntity(orderId, savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
         final OrderEntity savedOrder = orderRepository.save(orderToSave);
         assertThat(savedOrder.getTrackingCode())
                 .as("New orders must not have tracking code")
@@ -61,8 +59,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testUsingUnexistingShippingMethodThrowsException() {
         final UserEntity savedUser = newUser();
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, -1);
-        orderToSave.setNew(true);
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, -1).setNew();
         final RuntimeException exception = catchRuntimeException(() -> orderRepository.save(orderToSave));
         assertThat(exception)
                 .as("Unsupported shipping methods can't be used")
@@ -76,8 +73,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
         final UserEntity savedUser = newUser();
         Arrays.stream(ShippingMethod.values())
                 .forEach(shippingMethod -> {
-                    final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, shippingMethod.getId());
-                    orderToSave.setNew(true);
+                    final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, shippingMethod.getId()).setNew();
                     orderRepository.save(orderToSave);
                 });
     }
@@ -85,8 +81,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testUsingUnexistingPaymentMethodThrowsException() {
         final UserEntity savedUser = newUser();
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", -1, "00000000", null, DHL.getId());
-        orderToSave.setNew(true);
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", -1, "00000000", null, DHL.getId()).setNew();
         final RuntimeException exception = catchRuntimeException(() -> orderRepository.save(orderToSave));
         assertThat(exception)
                 .as("Unsupported payment types can't be used")
@@ -100,8 +95,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
         final UserEntity savedUser = newUser();
         Arrays.stream(PaymentType.values())
                 .forEach(paymentType -> {
-                    final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", paymentType.getId(), "00000000", null, DHL.getId());
-                    orderToSave.setNew(true);
+                    final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", paymentType.getId(), "00000000", null, DHL.getId()).setNew();
                     orderRepository.save(orderToSave);
                 });
     }

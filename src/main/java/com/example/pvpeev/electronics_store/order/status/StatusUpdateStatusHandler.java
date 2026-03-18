@@ -9,6 +9,7 @@ import com.example.pvpeev.electronics_store.order.payment.PaymentTypeHandler;
 import com.example.pvpeev.electronics_store.order.repository.OrderProductRepository;
 import com.example.pvpeev.electronics_store.order.repository.OrderRepository;
 import com.example.pvpeev.electronics_store.order.repository.OrderStatusRepository;
+import com.example.pvpeev.electronics_store.order.repository.WarehouseOrderRepository;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.example.pvpeev.electronics_store.order.status.OrderStatus.DELIVERED;
+import static com.example.pvpeev.electronics_store.order.status.OrderStatus.SHIPPED;
 
 @Component
 public class StatusUpdateStatusHandler {
@@ -27,12 +29,14 @@ public class StatusUpdateStatusHandler {
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final WarehouseOrderRepository warehouseOrderRepository;
     private final Map<Integer, PaymentTypeHandler> paymentHandlers;
 
-    public StatusUpdateStatusHandler(OrderRepository orderRepository, OrderProductRepository orderProductRepository, OrderStatusRepository orderStatusRepository, List<PaymentTypeHandler> paymentHandlers) {
+    public StatusUpdateStatusHandler(OrderRepository orderRepository, OrderProductRepository orderProductRepository, OrderStatusRepository orderStatusRepository, WarehouseOrderRepository warehouseOrderRepository, List<PaymentTypeHandler> paymentHandlers) {
         this.orderRepository = orderRepository;
         this.orderProductRepository = orderProductRepository;
         this.orderStatusRepository = orderStatusRepository;
+        this.warehouseOrderRepository = warehouseOrderRepository;
         this.paymentHandlers = paymentHandlers.stream().collect(Collectors.toMap(pth -> pth.getSupportedPaymentType().getId(), Function.identity()));
     }
 
@@ -52,6 +56,9 @@ public class StatusUpdateStatusHandler {
             final int totalOrderPrice = orderProductRepository.getTotalOrderPrice(orderStatusDetails.getOrderId());
             final OrderDetails orderDetails = new OrderDetails(orderEntity.getId(), orderEntity.getUserId(), totalOrderPrice, orderEntity.getShippingMethod(), orderEntity.getPaymentType(), DELIVERED.name());
             paymentTypeHandler.handlePayment(orderDetails);
+        } else if (orderStatus == SHIPPED) {
+            warehouseOrderRepository.deleteByOrderId(orderStatusDetails.getOrderId());
+            orderStatusRepository.save(new OrderStatusEntity(null, orderStatusDetails.getOrderId(), orderStatus.getId()));
         } else {
             orderStatusRepository.save(new OrderStatusEntity(null, orderStatusDetails.getOrderId(), orderStatus.getId()));
         }

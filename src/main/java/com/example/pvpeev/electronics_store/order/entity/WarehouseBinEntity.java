@@ -5,16 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.UUID;
-
-@Table(name = "warehouse_queue")
+@Table(name = "warehouse_bin")
 @RequiredArgsConstructor
 @Getter
-public class WarehouseOrderEntity {
+public class WarehouseBinEntity {
+
     @Id
-    private final Long id;
+    private final Integer id;
 
-    private final UUID orderId;
+    private final String binLabel;
 
-    private final Integer bin_id;
 }

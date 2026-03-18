@@ -2,7 +2,6 @@ package com.example.pvpeev.electronics_store.order.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.domain.Persistable;
@@ -31,8 +30,12 @@ public class OrderEntity implements Persistable<UUID> {
     private final Integer shippingMethod;
 
     @Transient
-    @Setter
     private boolean isNew = false;
+
+    public OrderEntity setNew() {
+        this.isNew = true;
+        return this;
+    }
 
     @Override
     public boolean isNew() {

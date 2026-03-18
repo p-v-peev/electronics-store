@@ -80,7 +80,12 @@ CREATE TABLE "user_authority" (
 CREATE TABLE "warehouse_queue" (
   "id" bigserial PRIMARY KEY,
   "order_id" uuid UNIQUE NOT NULL,
-  "bin_address" varchar(20)
+  "bin_id" integer
+);
+
+CREATE TABLE "warehouse_bin" (
+  "id" serial PRIMARY KEY,
+  "bin_label" varchar(10) UNIQUE NOT NULL
 );
 
 CREATE UNIQUE INDEX ON "product_image" ("product_id", "image_url");
@@ -94,6 +99,8 @@ CREATE UNIQUE INDEX ON "order_product" ("order_id", "product_id");
 CREATE UNIQUE INDEX ON "user_address" ("user_id", "address");
 
 CREATE UNIQUE INDEX ON "user_authority" ("user_id", "authority_id");
+
+ALTER TABLE "warehouse_queue" ADD CONSTRAINT "fk_warehouse_bin_id" FOREIGN KEY ("bin_id") REFERENCES "warehouse_bin" ("id");
 
 ALTER TABLE "warehouse_queue" ADD CONSTRAINT "fk_warehouse_order_id" FOREIGN KEY ("order_id") REFERENCES "order" ("id");
 
