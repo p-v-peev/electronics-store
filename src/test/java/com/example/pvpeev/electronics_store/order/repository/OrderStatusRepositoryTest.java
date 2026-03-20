@@ -12,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static com.example.pvpeev.electronics_store.order.payment.PaymentType.DEBIT_CARD;
 import static com.example.pvpeev.electronics_store.order.shipping.ShippingMethod.DHL;
@@ -61,6 +62,23 @@ public class OrderStatusRepositoryTest extends BaseRepositoryTest {
                 .forEach(orderStatus -> {
                     assertThatNoException().isThrownBy(() -> orderStatusRepository.save(new OrderStatusEntity(null, orderId, orderStatus.getId())));
                 });
+    }
+
+    @Test
+    public void testGetAllStatusesForOrder() {
+        final UserEntity savedUser = newUser();
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
+        final UUID orderId = orderRepository.save(orderToSave).getId();
+        Stream.of(OrderStatus.ACCEPTED, OrderStatus.CONFIRMED)
+                .forEach(orderStatus -> orderStatusRepository.save(new OrderStatusEntity(null, orderId, orderStatus.getId())));
+
+        assertThat(orderStatusRepository.findAllByOrderId(orderId))
+                .as("The order must have only the ACCEPTED and CONFIRMED")
+                .extracting(OrderStatusEntity::getOrderStatus)
+                .containsExactlyInAnyOrder(
+                        OrderStatus.ACCEPTED.getId(),
+                        OrderStatus.CONFIRMED.getId()
+                );
     }
 
     private UserEntity newUser() {

@@ -16,12 +16,12 @@ import static com.example.pvpeev.electronics_store.order.controller.OrderStatusC
 @RequestMapping(PATH)
 @RequiredArgsConstructor
 public class OrderStatusController {
-    public static final String PATH = "/api/v1/delivery-statuses";
+    public static final String PATH = "/api/v1/order-statuses";
 
     private final OrderStatusService orderStatusService;
 
     @GetMapping
     public ResponseEntity<List<OrderStatusResponse>> getAll() {
-        return ResponseEntity.ok(orderStatusService.getAllOrderStatuses());
+        return ResponseEntity.ok(orderStatusService.getAllStatuses());
     }
 }
