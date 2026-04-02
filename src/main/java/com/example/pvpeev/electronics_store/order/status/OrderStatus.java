@@ -18,7 +18,8 @@ public enum OrderStatus {
     WAITING_PAYMENT(1000, "Waiting payment"),
     PAID(1100, "Order paid"),
     COMPLETED(1200, "Order completed"),
-    REQUIRES_HUMAN_INTERVENTION(1300, "Requires human intervention");
+    REQUIRES_HUMAN_INTERVENTION(1300, "Requires human intervention"),
+    CANCELED(1400, "Canceled");
 
 
     private final Integer id;

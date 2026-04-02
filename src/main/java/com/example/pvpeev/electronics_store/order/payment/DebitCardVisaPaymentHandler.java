@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class DebitCardPaymentHandler implements PaymentTypeHandler {
+public class DebitCardVisaPaymentHandler implements PaymentTypeHandler {
 
     private final OrderStatusRepository orderStatusRepository;
     private final WarehouseOrderRepository warehouseOrderRepository;
@@ -20,7 +20,7 @@ public class DebitCardPaymentHandler implements PaymentTypeHandler {
 
     @Override
     public PaymentType getSupportedPaymentType() {
-        return PaymentType.DEBIT_CARD;
+        return PaymentType.DEBIT_CARD_VISA;
     }
 
     @Override

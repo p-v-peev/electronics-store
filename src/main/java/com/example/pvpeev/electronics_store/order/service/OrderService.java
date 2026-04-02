@@ -10,33 +10,33 @@ import com.example.pvpeev.electronics_store.order.dto.internal.OrderShippingDeta
 import com.example.pvpeev.electronics_store.order.dto.internal.OrderStatusDetails;
 import com.example.pvpeev.electronics_store.order.entity.OrderEntity;
 import com.example.pvpeev.electronics_store.order.mapper.OrderMapper;
-import com.example.pvpeev.electronics_store.order.payment.PaymentType;
+import com.example.pvpeev.electronics_store.order.pipeline.OrderPipelineStage;
 import com.example.pvpeev.electronics_store.order.repository.OrderRepository;
-import com.example.pvpeev.electronics_store.order.shipping.ShippingMethod;
 import com.example.pvpeev.electronics_store.order.status.OrderStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-
-import static com.example.pvpeev.electronics_store.order.status.OrderStatus.*;
+import java.util.function.Supplier;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final OrderMapper orderMapper;
     private final OrderRepository orderRepository;
+    private final PaymentTypeService paymentTypeService;
+    private final ShippingMethodService shippingMethodService;
 
-    public OrderService(KafkaTemplate<String, Object> kafkaTemplate, OrderMapper orderMapper, OrderRepository orderRepository) {
-        this.kafkaTemplate = kafkaTemplate;
-        this.orderMapper = orderMapper;
-        this.orderRepository = orderRepository;
-    }
+    private final Supplier<UUID> uuidSupplier;
+    private final Clock timeSupplier;
 
     public OrderResponse findById(UUID orderId) {
         final Optional<OrderEntity> order = orderRepository.findById(orderId);
@@ -47,45 +47,32 @@ public class OrderService {
     }
 
     public CompletableFuture<UUID> ingestOrder(OrderRequest order) {
-        try {
-            PaymentType.valueOf(order.getPaymentType());
-            ShippingMethod.valueOf(order.getShippingMethod());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException();
-        }
-        final UUID orderId = UUID.randomUUID();
-        return kafkaTemplate.send(ACCEPTED.name(), new OrderRequestWithId(orderId, order))
+        paymentTypeService.getPaymentTypeByName(order.getPaymentType()).orElseThrow(BadRequestException::new);
+        shippingMethodService.getShippingMethodByName(order.getShippingMethod()).orElseThrow(BadRequestException::new);
+
+        final UUID orderId = uuidSupplier.get();
+
+        return kafkaTemplate.send(OrderPipelineStage.ACCEPTED.getStage(), new OrderRequestWithId(orderId, order, timeSupplier.instant()))
                 .thenApply(ignore -> orderId);
     }
 
-    @Transactional
     public void confirmOrder(UUID orderId) {
-        final boolean orderExists = orderRepository.existsById(orderId);
-        if (!orderExists) {
-            throw new ResourceNotFoundException();
-        }
-        kafkaTemplate.send(WAITING_WAREHOUSE.name(), orderId.toString());
+        this.findById(orderId);
+        kafkaTemplate.send(OrderPipelineStage.WAITING_WAREHOUSE.getStage(), orderId.toString());
     }
 
-    @Transactional
     public void arrangeShipping(UUID orderId) {
-        final Optional<OrderEntity> order = orderRepository.findById(orderId);
-        if (order.isEmpty()) {
-            throw new ResourceNotFoundException();
-        }
-        kafkaTemplate.send("ARRANGE_SHIPPING", new OrderShippingDetails(orderId, order.get().getShippingMethod()));
+        final OrderResponse orderResponse = this.findById(orderId);
+        kafkaTemplate.send(OrderPipelineStage.ARRANGE_SHIPPING.getStage(), new OrderShippingDetails(orderId, orderResponse.getShippingMethod()));
     }
 
     public void updateStatus(UUID orderId, ShipmentStatusUpdate update) throws ExecutionException, InterruptedException {
-        final Optional<OrderEntity> order = orderRepository.findById(orderId);
-        if (order.isEmpty()) {
-            throw new ResourceNotFoundException();
-        }
+        this.findById(orderId);
         final OrderStatus orderStatus = OrderStatus.valueOf(update.getShippingStatus());
-        if (orderStatus != SHIPPED && orderStatus != OUT_FOR_DELIVERY && orderStatus != DELIVERED) {
+        if (orderStatus != OrderStatus.SHIPPED && orderStatus != OrderStatus.OUT_FOR_DELIVERY && orderStatus != OrderStatus.DELIVERED) {
             throw new BadRequestException();
         }
 
-        kafkaTemplate.send("ORDER_STATUS_UPDATE", new OrderStatusDetails(orderId, update.getShippingStatus()));
+        kafkaTemplate.send(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage(), new OrderStatusDetails(orderId, update.getShippingStatus()));
     }
 }

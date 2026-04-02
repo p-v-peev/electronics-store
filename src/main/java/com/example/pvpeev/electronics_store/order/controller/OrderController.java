@@ -6,6 +6,7 @@ import com.example.pvpeev.electronics_store.order.dto.OrderStatusResponse;
 import com.example.pvpeev.electronics_store.order.dto.ShipmentStatusUpdate;
 import com.example.pvpeev.electronics_store.order.service.OrderService;
 import com.example.pvpeev.electronics_store.order.service.OrderStatusService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +40,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public CompletableFuture<ResponseEntity<Void>> placeOrder(@RequestBody OrderRequest orderRequest, UriComponentsBuilder ucb) {
+    public CompletableFuture<ResponseEntity<Void>> placeOrder(@Valid @RequestBody OrderRequest orderRequest, UriComponentsBuilder ucb) {
         return orderService.ingestOrder(orderRequest)
                 .thenApply(id -> {
                     final URI uri = ucb.path(PATH).pathSegment("{id}").build(id);

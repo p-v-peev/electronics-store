@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -17,13 +18,19 @@ public class PaymentTypeService {
     private final PaymentTypeMapper paymentTypeMapper;
 
     private final Map<PaymentType, PaymentTypeHandler> availableHandlers;
+    private final Map<String, PaymentType> paymentTypesByName;
 
     public PaymentTypeService(PaymentTypeMapper paymentTypeMapper, List<PaymentTypeHandler> handlers) {
         this.paymentTypeMapper = paymentTypeMapper;
         this.availableHandlers = handlers.stream().collect(Collectors.toMap(PaymentTypeHandler::getSupportedPaymentType, Function.identity()));
+        this.paymentTypesByName = handlers.stream().collect(Collectors.toMap(pth -> pth.getSupportedPaymentType().name(), PaymentTypeHandler::getSupportedPaymentType));
     }
 
     public List<PaymentTypeResponse> getAllPaymentTypes() {
         return availableHandlers.keySet().stream().map(paymentTypeMapper::toResponse).toList();
+    }
+
+    public Optional<PaymentType> getPaymentTypeByName(String name) {
+        return Optional.ofNullable(paymentTypesByName.get(name));
     }
 }

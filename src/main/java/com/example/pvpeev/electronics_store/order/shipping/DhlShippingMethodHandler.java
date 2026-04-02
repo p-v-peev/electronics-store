@@ -12,8 +12,8 @@ public class DhlShippingMethodHandler implements ShippingMethodHandler {
     }
 
     @Override
-    public UUID registerOrder(UUID orderId) {
-        return UUID.randomUUID();
+    public String registerOrder(UUID orderId) {
+        return UUID.randomUUID().toString();
     }
 
     @Override

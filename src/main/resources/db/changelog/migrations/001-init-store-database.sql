@@ -48,7 +48,7 @@ CREATE TABLE "order_product" (
   "id" bigserial PRIMARY KEY,
   "order_id" uuid NOT NULL,
   "product_id" uuid NOT NULL,
-  "quantity" integer NOT NULL,
+  "quantity" smallint NOT NULL,
   "price_at_purchase" integer NOT NULL
 );
 

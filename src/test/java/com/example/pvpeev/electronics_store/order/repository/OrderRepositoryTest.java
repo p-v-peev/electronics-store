@@ -13,7 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static com.example.pvpeev.electronics_store.order.payment.PaymentType.DEBIT_CARD;
+import static com.example.pvpeev.electronics_store.order.payment.PaymentType.DEBIT_CARD_VISA;
 import static com.example.pvpeev.electronics_store.order.shipping.ShippingMethod.DHL;
 import static org.assertj.core.api.Assertions.*;
 
@@ -27,7 +27,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testAddingOrderForUnexistingUserThrowsException() {
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), UUID.randomUUID(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), UUID.randomUUID(), "Test address", DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew();
         final RuntimeException exception = catchRuntimeException(() -> orderRepository.save(orderToSave));
         assertThat(exception)
                 .as("Orders can't be placed by unexisting users")
@@ -40,12 +40,12 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
     public void testSetOrderTrackingCode() {
         final UserEntity savedUser = newUser();
         final UUID orderId = UUID.randomUUID();
-        final OrderEntity orderToSave = new OrderEntity(orderId, savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
+        final OrderEntity orderToSave = new OrderEntity(orderId, savedUser.getId(), "Test address", DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew();
         final OrderEntity savedOrder = orderRepository.save(orderToSave);
         assertThat(savedOrder.getTrackingCode())
                 .as("New orders must not have tracking code")
                 .isNull();
-        final UUID trackingCode = UUID.randomUUID();
+        final String trackingCode = UUID.randomUUID().toString();
         orderRepository.setOrderTrackingCode(orderId, trackingCode);
         assertThat(orderRepository.findById(orderId))
                 .isPresent()
@@ -58,7 +58,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testUsingUnexistingShippingMethodThrowsException() {
         final UserEntity savedUser = newUser();
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, -1).setNew();
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD_VISA.getId(), "00000000", null, -1).setNew();
         final RuntimeException exception = catchRuntimeException(() -> orderRepository.save(orderToSave));
         assertThat(exception)
                 .as("Unsupported shipping methods can't be used")
@@ -72,7 +72,7 @@ public class OrderRepositoryTest extends BaseRepositoryTest {
         final UserEntity savedUser = newUser();
         Arrays.stream(ShippingMethod.values())
                 .forEach(shippingMethod -> {
-                    final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, shippingMethod.getId()).setNew();
+                    final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD_VISA.getId(), "00000000", null, shippingMethod.getId()).setNew();
                     assertThatNoException().isThrownBy(() -> orderRepository.save(orderToSave));
                 });
     }

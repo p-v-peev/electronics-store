@@ -18,9 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.example.pvpeev.electronics_store.TextConstants.PRODUCT_IMAGES_STORAGE;
 import static com.example.pvpeev.electronics_store.TextConstants.PRODUCT_THUMBNAILS_STORAGE;
@@ -84,5 +83,17 @@ public class ProductService {
         if (result == 0) {
             throw new ResourceNotFoundException();
         }
+    }
+
+    public Map<UUID, Integer> getProductPrices(Set<UUID> productIds) {
+        return productRepository.findAllById(productIds)
+                .stream()
+                .collect(Collectors.toMap(ProductEntity::getId, ProductEntity::getPrice));
+    }
+
+    public Map<UUID, Integer> getProductQuantities(Set<UUID> productIds) {
+        return productRepository.findAllById(productIds)
+                .stream()
+                .collect(Collectors.toMap(ProductEntity::getId, ProductEntity::getQuantityAvailable));
     }
 }

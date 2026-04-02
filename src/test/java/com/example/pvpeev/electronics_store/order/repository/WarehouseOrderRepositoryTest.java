@@ -46,7 +46,7 @@ public class WarehouseOrderRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testAddingToQueueForUnexistingBinThrowsException() {
         final UUID userId = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true)).getId();
-        final UUID orderId = orderRepository.save(new OrderEntity(UUID.randomUUID(), userId, "Test address", PaymentType.DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew()).getId();
+        final UUID orderId = orderRepository.save(new OrderEntity(UUID.randomUUID(), userId, "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew()).getId();
 
         final RuntimeException exception = catchRuntimeException(() -> warehouseOrderRepository.save(new WarehouseOrderEntity(null, orderId, -1)));
 
@@ -61,7 +61,7 @@ public class WarehouseOrderRepositoryTest extends BaseRepositoryTest {
     public void testAddingWarehouseQueueEntry() {
         final Integer binId = warehouseBinRepository.save(new WarehouseBinEntity(null, "A-12-3")).getId();
         final UUID userId = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true)).getId();
-        final UUID orderId = orderRepository.save(new OrderEntity(UUID.randomUUID(), userId, "Test address", PaymentType.DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew()).getId();
+        final UUID orderId = orderRepository.save(new OrderEntity(UUID.randomUUID(), userId, "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew()).getId();
 
         assertThatNoException().isThrownBy(() -> warehouseOrderRepository.save(new WarehouseOrderEntity(null, orderId, binId)));
     }
@@ -70,7 +70,7 @@ public class WarehouseOrderRepositoryTest extends BaseRepositoryTest {
     public void testDeleteByOrderId() {
         final Integer binId = warehouseBinRepository.save(new WarehouseBinEntity(null, "A-12-3")).getId();
         final UUID userId = userRepository.save(new UserEntity(null, "pvpeev@store.com", "Plamen", "Peev", "{noop}password", "+359897401213", true)).getId();
-        final UUID orderId = orderRepository.save(new OrderEntity(UUID.randomUUID(), userId, "Test address", PaymentType.DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew()).getId();
+        final UUID orderId = orderRepository.save(new OrderEntity(UUID.randomUUID(), userId, "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew()).getId();
 
         final Long id = warehouseOrderRepository.save(new WarehouseOrderEntity(null, orderId, binId)).getId();
 

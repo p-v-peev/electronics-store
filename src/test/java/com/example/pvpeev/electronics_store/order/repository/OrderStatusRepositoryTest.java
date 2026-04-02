@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static com.example.pvpeev.electronics_store.order.payment.PaymentType.DEBIT_CARD;
+import static com.example.pvpeev.electronics_store.order.payment.PaymentType.DEBIT_CARD_VISA;
 import static com.example.pvpeev.electronics_store.order.shipping.ShippingMethod.DHL;
 import static org.assertj.core.api.Assertions.*;
 
@@ -42,7 +42,7 @@ public class OrderStatusRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testAddingUnexistingStatusThrowsException() {
         final UserEntity savedUser = newUser();
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew();
         final UUID orderId = orderRepository.save(orderToSave).getId();
 
         final RuntimeException exception = catchRuntimeException(() -> orderStatusRepository.save(new OrderStatusEntity(null, orderId, -1)));
@@ -56,7 +56,7 @@ public class OrderStatusRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testAddingAllExistingStatusesIsPossible() {
         final UserEntity savedUser = newUser();
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew();
         final UUID orderId = orderRepository.save(orderToSave).getId();
         Arrays.stream(OrderStatus.values())
                 .forEach(orderStatus -> {
@@ -67,7 +67,7 @@ public class OrderStatusRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testGetAllStatusesForOrder() {
         final UserEntity savedUser = newUser();
-        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
+        final OrderEntity orderToSave = new OrderEntity(UUID.randomUUID(), savedUser.getId(), "Test address", DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew();
         final UUID orderId = orderRepository.save(orderToSave).getId();
         Stream.of(OrderStatus.ACCEPTED, OrderStatus.CONFIRMED)
                 .forEach(orderStatus -> orderStatusRepository.save(new OrderStatusEntity(null, orderId, orderStatus.getId())));

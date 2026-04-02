@@ -25,7 +25,7 @@ public class OrderEntity implements Persistable<UUID> {
 
     private final String phoneNumber;
 
-    private final UUID trackingCode;
+    private final String trackingCode;
 
     private final Integer shippingMethod;
 

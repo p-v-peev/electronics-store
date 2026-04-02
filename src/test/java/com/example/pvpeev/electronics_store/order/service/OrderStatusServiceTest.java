@@ -48,7 +48,8 @@ public class OrderStatusServiceTest {
                         new OrderStatusResponse(1000, "Waiting payment"),
                         new OrderStatusResponse(1100, "Order paid"),
                         new OrderStatusResponse(1200, "Order completed"),
-                        new OrderStatusResponse(1300, "Requires human intervention")
+                        new OrderStatusResponse(1300, "Requires human intervention"),
+                        new OrderStatusResponse(1400, "Canceled")
                 );
     }
 

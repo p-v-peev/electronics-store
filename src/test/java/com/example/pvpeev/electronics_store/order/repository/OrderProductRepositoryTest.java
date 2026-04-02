@@ -55,7 +55,7 @@ class OrderProductRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testAddingUnexistingProductToOrderThrowsException() {
-        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), user.getId(), "Test address", PaymentType.DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
+        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), user.getId(), "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew();
         final UUID orderId = orderRepository.save(orderEntity).getId();
         final RuntimeException exception = catchRuntimeException(() -> orderProductRepository.save(new OrderProductEntity(null, orderId, UUID.randomUUID(), 10, 1000)));
 
@@ -81,7 +81,7 @@ class OrderProductRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testAddingProductToOrder() {
         final UUID productId = productRepository.save(new ProductEntity(null, this.productCategory.getId(), this.productBrand.getId(), "Iphone 17", "Iphone 17", 1000, 10, "http://fake-url.local", false)).getId();
-        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), user.getId(), "Test address", PaymentType.DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
+        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), user.getId(), "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew();
         final UUID orderId = orderRepository.save(orderEntity).getId();
         assertThatNoException().isThrownBy(() -> orderProductRepository.save(new OrderProductEntity(null, orderId, productId, 10, 1000)));
     }
@@ -89,7 +89,7 @@ class OrderProductRepositoryTest extends BaseRepositoryTest {
     @Test
     public void testGetTotalPrice() {
         final UUID productId = productRepository.save(new ProductEntity(null, this.productCategory.getId(), this.productBrand.getId(), "Iphone 17", "Iphone 17", 1000, 10, "http://fake-url.local", false)).getId();
-        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), user.getId(), "Test address", PaymentType.DEBIT_CARD.getId(), "00000000", null, DHL.getId()).setNew();
+        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), user.getId(), "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "00000000", null, DHL.getId()).setNew();
         final UUID orderId = orderRepository.save(orderEntity).getId();
         orderProductRepository.save(new OrderProductEntity(null, orderId, productId, 10, 1000));
         assertThat(orderProductRepository.getTotalOrderPrice(orderId))

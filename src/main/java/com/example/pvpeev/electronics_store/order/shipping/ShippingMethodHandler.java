@@ -5,7 +5,7 @@ import java.util.UUID;
 public interface ShippingMethodHandler {
     ShippingMethod getSupportedShippingMethod();
 
-    UUID registerOrder(UUID orderId);
+    String registerOrder(UUID orderId);
 
     UUID requestOrderPayment(Integer amount);
 }

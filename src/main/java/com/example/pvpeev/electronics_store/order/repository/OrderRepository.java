@@ -15,5 +15,5 @@ public interface OrderRepository extends CrudRepository<OrderEntity, UUID>, Pagi
     @Query("""
             UPDATE public.order SET tracking_code = :trackingCode WHERE id = :orderId
             """)
-    void setOrderTrackingCode(UUID orderId, UUID trackingCode);
+    void setOrderTrackingCode(UUID orderId, String trackingCode);
 }
