@@ -7,10 +7,7 @@ import com.example.pvpeev.electronics_store.order.repository.OrderStatusReposito
 import com.example.pvpeev.electronics_store.order.status.OrderStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -20,11 +17,13 @@ public class OrderStatusService {
     private final OrderStatusMapper orderStatusMapper;
     private final OrderStatusRepository orderStatusRepository;
     private final Map<Integer, OrderStatus> orderStatusMap;
+    private final Map<String, OrderStatus> orderStatusesByName;
 
     public OrderStatusService(OrderStatusMapper orderStatusMapper, OrderStatusRepository orderStatusRepository) {
         this.orderStatusMapper = orderStatusMapper;
         this.orderStatusRepository = orderStatusRepository;
         this.orderStatusMap = Arrays.stream(OrderStatus.values()).collect(Collectors.toMap(OrderStatus::getId, Function.identity()));
+        this.orderStatusesByName = Arrays.stream(OrderStatus.values()).collect(Collectors.toMap(OrderStatus::name, Function.identity()));
     }
 
     public List<OrderStatusResponse> getAllStatuses() {
@@ -37,6 +36,10 @@ public class OrderStatusService {
                 .map(orderStatusMap::get)
                 .map(orderStatusMapper::toResponse)
                 .toList();
+    }
+
+    public Optional<OrderStatus> getOrderStatusByName(String name) {
+        return Optional.ofNullable(orderStatusesByName.get(name));
     }
 
 }

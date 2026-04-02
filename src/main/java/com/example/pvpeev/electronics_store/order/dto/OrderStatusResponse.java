@@ -9,5 +9,5 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class OrderStatusResponse {
     private final Integer id;
-    private final String name;
+    private final String displayName;
 }

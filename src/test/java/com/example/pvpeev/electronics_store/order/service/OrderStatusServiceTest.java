@@ -64,4 +64,17 @@ public class OrderStatusServiceTest {
         verify(orderStatusRepository, times(1)).findAllByOrderId(orderId);
         verify(orderStatusMapper, times(1)).toResponse(OrderStatus.ACCEPTED);
     }
+
+    @Test
+    public void testGetExistingOrderStatus() {
+        assertThat(orderStatusService.getOrderStatusByName(OrderStatus.ACCEPTED.name()))
+                .get()
+                .isEqualTo(OrderStatus.ACCEPTED);
+    }
+
+    @Test
+    public void testGetUnexistingOrderStatus() {
+        assertThat(orderStatusService.getOrderStatusByName("TEST"))
+                .isEmpty();
+    }
 }

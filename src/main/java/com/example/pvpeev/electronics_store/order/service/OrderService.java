@@ -18,11 +18,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 @Service
@@ -34,6 +32,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final PaymentTypeService paymentTypeService;
     private final ShippingMethodService shippingMethodService;
+    private final OrderStatusService orderStatusService;
 
     private final Supplier<UUID> uuidSupplier;
     private final Clock timeSupplier;
@@ -66,10 +65,10 @@ public class OrderService {
         kafkaTemplate.send(OrderPipelineStage.ARRANGE_SHIPPING.getStage(), new OrderShippingDetails(orderId, orderResponse.getShippingMethod()));
     }
 
-    public void updateStatus(UUID orderId, ShipmentStatusUpdate update) throws ExecutionException, InterruptedException {
+    public void updateStatus(UUID orderId, ShipmentStatusUpdate update) {
         this.findById(orderId);
-        final OrderStatus orderStatus = OrderStatus.valueOf(update.getShippingStatus());
-        if (orderStatus != OrderStatus.SHIPPED && orderStatus != OrderStatus.OUT_FOR_DELIVERY && orderStatus != OrderStatus.DELIVERED) {
+        final OrderStatus orderStatus = orderStatusService.getOrderStatusByName(update.getShippingStatus()).orElseThrow(BadRequestException::new);
+        if (orderStatus.isInternal()) {
             throw new BadRequestException();
         }
 

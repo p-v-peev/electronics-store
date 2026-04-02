@@ -16,7 +16,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static com.example.pvpeev.electronics_store.order.controller.OrderController.PATH;
 
@@ -61,7 +60,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/shipments")
-    public ResponseEntity<Void> updateStatus(@PathVariable("orderId") UUID orderId, @RequestBody ShipmentStatusUpdate update) throws ExecutionException, InterruptedException {
+    public ResponseEntity<Void> updateStatus(@PathVariable("orderId") UUID orderId, @RequestBody ShipmentStatusUpdate update) {
         orderService.updateStatus(orderId, update);
         return ResponseEntity.accepted().build();
     }

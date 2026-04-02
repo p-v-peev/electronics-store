@@ -4,7 +4,10 @@ import com.example.pvpeev.electronics_store.advice.exception.BadRequestException
 import com.example.pvpeev.electronics_store.advice.exception.ResourceNotFoundException;
 import com.example.pvpeev.electronics_store.order.dto.OrderRequest;
 import com.example.pvpeev.electronics_store.order.dto.OrderResponse;
+import com.example.pvpeev.electronics_store.order.dto.ShipmentStatusUpdate;
 import com.example.pvpeev.electronics_store.order.dto.internal.OrderRequestWithId;
+import com.example.pvpeev.electronics_store.order.dto.internal.OrderShippingDetails;
+import com.example.pvpeev.electronics_store.order.dto.internal.OrderStatusDetails;
 import com.example.pvpeev.electronics_store.order.entity.OrderEntity;
 import com.example.pvpeev.electronics_store.order.mapper.OrderMapper;
 import com.example.pvpeev.electronics_store.order.mapper.OrderMapperImpl;
@@ -16,6 +19,7 @@ import com.example.pvpeev.electronics_store.order.pipeline.OrderPipelineStage;
 import com.example.pvpeev.electronics_store.order.repository.OrderRepository;
 import com.example.pvpeev.electronics_store.order.shipping.DhlShippingMethodHandler;
 import com.example.pvpeev.electronics_store.order.shipping.ShippingMethod;
+import com.example.pvpeev.electronics_store.order.status.OrderStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -53,6 +57,9 @@ public class OrderServiceTest {
 
     @Spy
     private ShippingMethodService shippingMethodService = new ShippingMethodService(new ShippingMethodMapperImpl(), List.of(new DhlShippingMethodHandler()));
+
+    @Spy
+    private OrderStatusService orderStatusService = new OrderStatusService(null, null);
 
     @Mock()
     private Supplier<UUID> uuidSupplier;
@@ -129,7 +136,126 @@ public class OrderServiceTest {
         verify(paymentTypeService, times(1)).getPaymentTypeByName(request.getPaymentType());
         verify(shippingMethodService, times(1)).getShippingMethodByName(request.getShippingMethod());
         verify(uuidSupplier, times(1)).get();
-        verify(timeSupplier,times(1)).instant();
+        verify(timeSupplier, times(1)).instant();
         verify(kafkaTemplate, times(1)).send(OrderPipelineStage.ACCEPTED.getStage(), expectedOrderRequestEithId);
+    }
+
+    @Test
+    public void testConfirmUnexistingOrder() {
+        final UUID orderId = UUID.randomUUID();
+
+        when(orderRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        final RuntimeException exception = catchRuntimeException(() -> orderService.confirmOrder(orderId));
+
+        assertThat(exception)
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(orderRepository, times(1)).findById(orderId);
+        verify(kafkaTemplate, times(0)).send(OrderPipelineStage.WAITING_WAREHOUSE.getStage(), orderId.toString());
+    }
+
+    @Test
+    public void testConfirmExistingOrder() {
+        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), UUID.randomUUID(), "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "0878414040", UUID.randomUUID().toString(), ShippingMethod.DHL.getId());
+
+        when(orderRepository.findById(orderEntity.getId())).thenReturn(Optional.of(orderEntity));
+
+        orderService.confirmOrder(orderEntity.getId());
+
+        verify(orderRepository, times(1)).findById(orderEntity.getId());
+        verify(kafkaTemplate, times(1)).send(OrderPipelineStage.WAITING_WAREHOUSE.getStage(), orderEntity.getId().toString());
+    }
+
+    @Test
+    public void testShippingUnexistingOrder() {
+        final UUID orderId = UUID.randomUUID();
+
+        when(orderRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        final RuntimeException exception = catchRuntimeException(() -> orderService.arrangeShipping(orderId));
+
+        assertThat(exception)
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(orderRepository, times(1)).findById(orderId);
+        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ARRANGE_SHIPPING.getStage()), any(OrderShippingDetails.class));
+    }
+
+    @Test
+    public void testShippingExistingOrder() {
+        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), UUID.randomUUID(), "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "0878414040", UUID.randomUUID().toString(), ShippingMethod.DHL.getId());
+
+        when(orderRepository.findById(orderEntity.getId())).thenReturn(Optional.of(orderEntity));
+
+        orderService.arrangeShipping(orderEntity.getId());
+
+        verify(orderRepository, times(1)).findById(orderEntity.getId());
+        verify(kafkaTemplate, times(1)).send(OrderPipelineStage.ARRANGE_SHIPPING.getStage(), new OrderShippingDetails(orderEntity.getId(), orderEntity.getShippingMethod()));
+    }
+
+    @Test
+    public void updateStatusUnexistingOrder() {
+        final UUID orderId = UUID.randomUUID();
+        final ShipmentStatusUpdate shipmentStatusUpdate = new ShipmentStatusUpdate(OrderStatus.SHIPPED.name());
+
+        when(orderRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        final RuntimeException exception = catchRuntimeException(() -> orderService.updateStatus(orderId, shipmentStatusUpdate));
+
+        assertThat(exception)
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(orderRepository, times(1)).findById(orderId);
+        verify(orderStatusService, times(0)).getOrderStatusByName(shipmentStatusUpdate.getShippingStatus());
+        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage()), any(OrderStatusDetails.class));
+    }
+
+    @Test
+    public void updateStatusWithUnexistingOne() {
+        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), UUID.randomUUID(), "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "0878414040", UUID.randomUUID().toString(), ShippingMethod.DHL.getId());
+        final ShipmentStatusUpdate shipmentStatusUpdate = new ShipmentStatusUpdate("TEST");
+
+        when(orderRepository.findById(orderEntity.getId())).thenReturn(Optional.of(orderEntity));
+
+        final RuntimeException exception = catchRuntimeException(() -> orderService.updateStatus(orderEntity.getId(), shipmentStatusUpdate));
+
+        assertThat(exception)
+                .isInstanceOf(BadRequestException.class);
+
+        verify(orderRepository, times(1)).findById(orderEntity.getId());
+        verify(orderStatusService, times(1)).getOrderStatusByName(shipmentStatusUpdate.getShippingStatus());
+        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage()), any(OrderStatusDetails.class));
+    }
+
+    @Test
+    public void updateStatusWithInternalStatus() {
+        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), UUID.randomUUID(), "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "0878414040", UUID.randomUUID().toString(), ShippingMethod.DHL.getId());
+        final ShipmentStatusUpdate shipmentStatusUpdate = new ShipmentStatusUpdate(OrderStatus.ACCEPTED.name());
+
+        when(orderRepository.findById(orderEntity.getId())).thenReturn(Optional.of(orderEntity));
+
+        final RuntimeException exception = catchRuntimeException(() -> orderService.updateStatus(orderEntity.getId(), shipmentStatusUpdate));
+
+        assertThat(exception)
+                .isInstanceOf(BadRequestException.class);
+
+        verify(orderRepository, times(1)).findById(orderEntity.getId());
+        verify(orderStatusService, times(1)).getOrderStatusByName(shipmentStatusUpdate.getShippingStatus());
+        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage()), any(OrderStatusDetails.class));
+    }
+
+    @Test
+    public void updateStatus() {
+        final OrderEntity orderEntity = new OrderEntity(UUID.randomUUID(), UUID.randomUUID(), "Test address", PaymentType.DEBIT_CARD_VISA.getId(), "0878414040", UUID.randomUUID().toString(), ShippingMethod.DHL.getId());
+        final ShipmentStatusUpdate shipmentStatusUpdate = new ShipmentStatusUpdate(OrderStatus.SHIPPED.name());
+
+        when(orderRepository.findById(orderEntity.getId())).thenReturn(Optional.of(orderEntity));
+
+        orderService.updateStatus(orderEntity.getId(), shipmentStatusUpdate);
+
+        verify(orderRepository, times(1)).findById(orderEntity.getId());
+        verify(orderStatusService, times(1)).getOrderStatusByName(shipmentStatusUpdate.getShippingStatus());
+        verify(kafkaTemplate, times(0)).send(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage(), new OrderStatusDetails(orderEntity.getId(), shipmentStatusUpdate.getShippingStatus()));
     }
 }
