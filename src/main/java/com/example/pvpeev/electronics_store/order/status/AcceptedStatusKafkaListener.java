@@ -7,7 +7,7 @@ import com.example.pvpeev.electronics_store.order.entity.OrderEntity;
 import com.example.pvpeev.electronics_store.order.entity.OrderProductEntity;
 import com.example.pvpeev.electronics_store.order.mapper.OrderMapper;
 import com.example.pvpeev.electronics_store.order.mapper.OrderProductMapper;
-import com.example.pvpeev.electronics_store.order.pipeline.OrderPipelineStage;
+import com.example.pvpeev.electronics_store.order.pipeline.OrderStage;
 import com.example.pvpeev.electronics_store.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,7 +30,7 @@ public class AcceptedStatusKafkaListener {
     private final OrderProductMapper orderProductMapper;
     private final JdbcTemplate jdbcTemplate;
 
-    @KafkaListener(topics = "#T{(com.example.pvpeev.electronics_store.order.pipeline.OrderPipelineStage).ACCEPTED.getStage()}",
+    @KafkaListener(topics = "#T{(com.example.pvpeev.electronics_store.order.pipeline.OrderStage).ACCEPTED.getStage()}",
             groupId = "accepting-group",
             batch = "true")
     @Transactional
@@ -49,10 +49,10 @@ public class AcceptedStatusKafkaListener {
         separateOrders(orderRequests, productPrices, productQuantities, invalidOrders, canceledOrders, validOrders, validOrderProducts);
 
         if (!invalidOrders.isEmpty()) {
-            invalidOrders.forEach(or -> kafkaTemplate.send(OrderPipelineStage.INVALID.getStage(), or));
+            invalidOrders.forEach(or -> kafkaTemplate.send(OrderStage.INVALID.getStage(), or));
         }
         if (!canceledOrders.isEmpty()) {
-            canceledOrders.forEach(or -> kafkaTemplate.send(OrderPipelineStage.CANCELED.getStage(), or));
+            canceledOrders.forEach(or -> kafkaTemplate.send(OrderStage.CANCELED.getStage(), or));
         }
 
         if (validOrders.isEmpty()) {
@@ -63,7 +63,7 @@ public class AcceptedStatusKafkaListener {
         persistOrderProducts(validOrderProducts);
         persistOrderStatuses(validOrders);
 
-        validOrders.forEach(or -> kafkaTemplate.send(OrderPipelineStage.PROCESS_PAYMENT.getStage(), or.getId()));
+        validOrders.forEach(or -> kafkaTemplate.send(OrderStage.PROCESS_PAYMENT.getStage(), or.getId()));
     }
 
     private void persistOrderStatuses(List<OrderEntity> validOrders) {

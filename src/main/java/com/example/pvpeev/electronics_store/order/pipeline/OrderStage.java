@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Getter
-public enum OrderPipelineStage {
+public enum OrderStage {
 
     ACCEPTED("ACCEPTED", OrderRequestWithId.class),
     WAITING_WAREHOUSE("WAITING_WAREHOUSE", UUID.class),

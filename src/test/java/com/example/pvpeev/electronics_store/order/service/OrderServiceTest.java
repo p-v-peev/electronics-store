@@ -15,7 +15,7 @@ import com.example.pvpeev.electronics_store.order.mapper.PaymentTypeMapperImpl;
 import com.example.pvpeev.electronics_store.order.mapper.ShippingMethodMapperImpl;
 import com.example.pvpeev.electronics_store.order.payment.DebitCardVisaPaymentHandler;
 import com.example.pvpeev.electronics_store.order.payment.PaymentType;
-import com.example.pvpeev.electronics_store.order.pipeline.OrderPipelineStage;
+import com.example.pvpeev.electronics_store.order.pipeline.OrderStage;
 import com.example.pvpeev.electronics_store.order.repository.OrderRepository;
 import com.example.pvpeev.electronics_store.order.shipping.DhlShippingMethodHandler;
 import com.example.pvpeev.electronics_store.order.shipping.ShippingMethod;
@@ -103,7 +103,7 @@ public class OrderServiceTest {
 
         verify(paymentTypeService, times(1)).getPaymentTypeByName(request.getPaymentType());
         verify(shippingMethodService, times(0)).getShippingMethodByName(any(String.class));
-        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ACCEPTED.getStage()), any(OrderRequestWithId.class));
+        verify(kafkaTemplate, times(0)).send(eq(OrderStage.ACCEPTED.getStage()), any(OrderRequestWithId.class));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class OrderServiceTest {
 
         verify(paymentTypeService, times(1)).getPaymentTypeByName(request.getPaymentType());
         verify(shippingMethodService, times(1)).getShippingMethodByName(request.getShippingMethod());
-        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ACCEPTED.getStage()), any(OrderRequestWithId.class));
+        verify(kafkaTemplate, times(0)).send(eq(OrderStage.ACCEPTED.getStage()), any(OrderRequestWithId.class));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class OrderServiceTest {
 
         when(uuidSupplier.get()).thenReturn(orderId);
         when(timeSupplier.instant()).thenReturn(orderTime);
-        when(kafkaTemplate.send(OrderPipelineStage.ACCEPTED.getStage(), expectedOrderRequestEithId))
+        when(kafkaTemplate.send(OrderStage.ACCEPTED.getStage(), expectedOrderRequestEithId))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
         assertThat(orderService.ingestOrder(request))
@@ -137,7 +137,7 @@ public class OrderServiceTest {
         verify(shippingMethodService, times(1)).getShippingMethodByName(request.getShippingMethod());
         verify(uuidSupplier, times(1)).get();
         verify(timeSupplier, times(1)).instant();
-        verify(kafkaTemplate, times(1)).send(OrderPipelineStage.ACCEPTED.getStage(), expectedOrderRequestEithId);
+        verify(kafkaTemplate, times(1)).send(OrderStage.ACCEPTED.getStage(), expectedOrderRequestEithId);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class OrderServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
 
         verify(orderRepository, times(1)).findById(orderId);
-        verify(kafkaTemplate, times(0)).send(OrderPipelineStage.WAITING_WAREHOUSE.getStage(), orderId.toString());
+        verify(kafkaTemplate, times(0)).send(OrderStage.WAITING_WAREHOUSE.getStage(), orderId.toString());
     }
 
     @Test
@@ -164,7 +164,7 @@ public class OrderServiceTest {
         orderService.confirmOrder(orderEntity.getId());
 
         verify(orderRepository, times(1)).findById(orderEntity.getId());
-        verify(kafkaTemplate, times(1)).send(OrderPipelineStage.WAITING_WAREHOUSE.getStage(), orderEntity.getId().toString());
+        verify(kafkaTemplate, times(1)).send(OrderStage.WAITING_WAREHOUSE.getStage(), orderEntity.getId().toString());
     }
 
     @Test
@@ -179,7 +179,7 @@ public class OrderServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
 
         verify(orderRepository, times(1)).findById(orderId);
-        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ARRANGE_SHIPPING.getStage()), any(OrderShippingDetails.class));
+        verify(kafkaTemplate, times(0)).send(eq(OrderStage.ARRANGE_SHIPPING.getStage()), any(OrderShippingDetails.class));
     }
 
     @Test
@@ -191,7 +191,7 @@ public class OrderServiceTest {
         orderService.arrangeShipping(orderEntity.getId());
 
         verify(orderRepository, times(1)).findById(orderEntity.getId());
-        verify(kafkaTemplate, times(1)).send(OrderPipelineStage.ARRANGE_SHIPPING.getStage(), new OrderShippingDetails(orderEntity.getId(), orderEntity.getShippingMethod()));
+        verify(kafkaTemplate, times(1)).send(OrderStage.ARRANGE_SHIPPING.getStage(), new OrderShippingDetails(orderEntity.getId(), orderEntity.getShippingMethod()));
     }
 
     @Test
@@ -208,7 +208,7 @@ public class OrderServiceTest {
 
         verify(orderRepository, times(1)).findById(orderId);
         verify(orderStatusService, times(0)).getOrderStatusByName(shipmentStatusUpdate.getShippingStatus());
-        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage()), any(OrderStatusDetails.class));
+        verify(kafkaTemplate, times(0)).send(eq(OrderStage.ORDER_STATUS_UPDATE.getStage()), any(OrderStatusDetails.class));
     }
 
     @Test
@@ -225,7 +225,7 @@ public class OrderServiceTest {
 
         verify(orderRepository, times(1)).findById(orderEntity.getId());
         verify(orderStatusService, times(1)).getOrderStatusByName(shipmentStatusUpdate.getShippingStatus());
-        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage()), any(OrderStatusDetails.class));
+        verify(kafkaTemplate, times(0)).send(eq(OrderStage.ORDER_STATUS_UPDATE.getStage()), any(OrderStatusDetails.class));
     }
 
     @Test
@@ -242,7 +242,7 @@ public class OrderServiceTest {
 
         verify(orderRepository, times(1)).findById(orderEntity.getId());
         verify(orderStatusService, times(1)).getOrderStatusByName(shipmentStatusUpdate.getShippingStatus());
-        verify(kafkaTemplate, times(0)).send(eq(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage()), any(OrderStatusDetails.class));
+        verify(kafkaTemplate, times(0)).send(eq(OrderStage.ORDER_STATUS_UPDATE.getStage()), any(OrderStatusDetails.class));
     }
 
     @Test
@@ -256,6 +256,6 @@ public class OrderServiceTest {
 
         verify(orderRepository, times(1)).findById(orderEntity.getId());
         verify(orderStatusService, times(1)).getOrderStatusByName(shipmentStatusUpdate.getShippingStatus());
-        verify(kafkaTemplate, times(0)).send(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage(), new OrderStatusDetails(orderEntity.getId(), shipmentStatusUpdate.getShippingStatus()));
+        verify(kafkaTemplate, times(0)).send(OrderStage.ORDER_STATUS_UPDATE.getStage(), new OrderStatusDetails(orderEntity.getId(), shipmentStatusUpdate.getShippingStatus()));
     }
 }

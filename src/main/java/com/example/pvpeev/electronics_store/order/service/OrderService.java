@@ -10,7 +10,7 @@ import com.example.pvpeev.electronics_store.order.dto.internal.OrderShippingDeta
 import com.example.pvpeev.electronics_store.order.dto.internal.OrderStatusDetails;
 import com.example.pvpeev.electronics_store.order.entity.OrderEntity;
 import com.example.pvpeev.electronics_store.order.mapper.OrderMapper;
-import com.example.pvpeev.electronics_store.order.pipeline.OrderPipelineStage;
+import com.example.pvpeev.electronics_store.order.pipeline.OrderStage;
 import com.example.pvpeev.electronics_store.order.repository.OrderRepository;
 import com.example.pvpeev.electronics_store.order.status.OrderStatus;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +18,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -45,24 +46,28 @@ public class OrderService {
         return orderMapper.toResponse(order.get());
     }
 
+    public List<OrderEntity> findAllById(List<UUID> orders) {
+        return orderRepository.findAllById(orders);
+    }
+
     public CompletableFuture<UUID> ingestOrder(OrderRequest order) {
         paymentTypeService.getPaymentTypeByName(order.getPaymentType()).orElseThrow(BadRequestException::new);
         shippingMethodService.getShippingMethodByName(order.getShippingMethod()).orElseThrow(BadRequestException::new);
 
         final UUID orderId = uuidSupplier.get();
 
-        return kafkaTemplate.send(OrderPipelineStage.ACCEPTED.getStage(), new OrderRequestWithId(orderId, order, timeSupplier.instant()))
+        return kafkaTemplate.send(OrderStage.ACCEPTED.getStage(), new OrderRequestWithId(orderId, order, timeSupplier.instant()))
                 .thenApply(ignore -> orderId);
     }
 
     public void confirmOrder(UUID orderId) {
         this.findById(orderId);
-        kafkaTemplate.send(OrderPipelineStage.WAITING_WAREHOUSE.getStage(), orderId.toString());
+        kafkaTemplate.send(OrderStage.WAITING_WAREHOUSE.getStage(), orderId.toString());
     }
 
     public void arrangeShipping(UUID orderId) {
         final OrderResponse orderResponse = this.findById(orderId);
-        kafkaTemplate.send(OrderPipelineStage.ARRANGE_SHIPPING.getStage(), new OrderShippingDetails(orderId, orderResponse.getShippingMethod()));
+        kafkaTemplate.send(OrderStage.ARRANGE_SHIPPING.getStage(), new OrderShippingDetails(orderId, orderResponse.getShippingMethod()));
     }
 
     public void updateStatus(UUID orderId, ShipmentStatusUpdate update) {
@@ -72,6 +77,6 @@ public class OrderService {
             throw new BadRequestException();
         }
 
-        kafkaTemplate.send(OrderPipelineStage.ORDER_STATUS_UPDATE.getStage(), new OrderStatusDetails(orderId, update.getShippingStatus()));
+        kafkaTemplate.send(OrderStage.ORDER_STATUS_UPDATE.getStage(), new OrderStatusDetails(orderId, update.getShippingStatus()));
     }
 }
