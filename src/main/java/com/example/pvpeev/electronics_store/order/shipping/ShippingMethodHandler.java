@@ -7,5 +7,5 @@ public interface ShippingMethodHandler {
 
     String registerOrder(UUID orderId);
 
-    UUID requestOrderPayment(Integer amount);
+    UUID requestOrderPayment(UUID orderId, Integer amount);
 }

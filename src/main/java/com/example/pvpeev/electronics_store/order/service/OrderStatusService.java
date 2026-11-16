@@ -26,6 +26,10 @@ public class OrderStatusService {
         this.orderStatusesByName = Arrays.stream(OrderStatus.values()).collect(Collectors.toMap(OrderStatus::name, Function.identity()));
     }
 
+    public Optional<OrderStatus> getOrderStatusByName(String name) {
+        return Optional.ofNullable(orderStatusesByName.get(name));
+    }
+
     public List<OrderStatusResponse> getAllStatuses() {
         return Arrays.stream(OrderStatus.values()).map(orderStatusMapper::toResponse).toList();
     }
@@ -38,8 +42,19 @@ public class OrderStatusService {
                 .toList();
     }
 
-    public Optional<OrderStatus> getOrderStatusByName(String name) {
-        return Optional.ofNullable(orderStatusesByName.get(name));
+    public boolean hasOrderStatusPayed(UUID orderId) {
+        return orderStatusRepository.existsByOrderIdAndOrderStatus(orderId, OrderStatus.PAID.getId());
     }
 
+    public void completeOrder(UUID orderId) {
+        orderStatusRepository.save(new OrderStatusEntity(null, orderId, OrderStatus.COMPLETED.getId()));
+    }
+
+    public void waitingPayment(UUID orderId) {
+        orderStatusRepository.save(new OrderStatusEntity(null, orderId, OrderStatus.WAITING_PAYMENT.getId()));
+    }
+
+    public void waitingConfirmation(UUID orderId) {
+        orderStatusRepository.save(new OrderStatusEntity(null, orderId, OrderStatus.WAITING_CONFIRMATION.getId()));
+    }
 }

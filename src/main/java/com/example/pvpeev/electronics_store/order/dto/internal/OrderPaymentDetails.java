@@ -7,11 +7,10 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Getter
-public class OrderDetails {
+public class OrderPaymentDetails {
     private final UUID orderId;
     private final UUID userId;
     private final Integer totalPrice;
     private final Integer shippingMethod;
     private final Integer paymentType;
-    private final String previousOrderStatus;
 }

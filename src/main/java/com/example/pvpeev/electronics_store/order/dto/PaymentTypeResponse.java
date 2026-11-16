@@ -9,6 +9,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class PaymentTypeResponse {
     private final Integer id;
-    private final String name;
+    private final String displayName;
     private final String description;
 }

@@ -12,4 +12,6 @@ public interface OrderStatusRepository extends CrudRepository<OrderStatusEntity,
 
     List<OrderStatusEntity> findAllByOrderId(UUID orderId);
 
+    boolean existsByOrderIdAndOrderStatus(UUID orderId, int orderStatus);
+
 }

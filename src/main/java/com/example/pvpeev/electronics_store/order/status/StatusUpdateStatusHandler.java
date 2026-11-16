@@ -1,7 +1,7 @@
 package com.example.pvpeev.electronics_store.order.status;
 
 
-import com.example.pvpeev.electronics_store.order.dto.internal.OrderDetails;
+import com.example.pvpeev.electronics_store.order.dto.internal.OrderPaymentDetails;
 import com.example.pvpeev.electronics_store.order.dto.internal.OrderStatusDetails;
 import com.example.pvpeev.electronics_store.order.entity.OrderEntity;
 import com.example.pvpeev.electronics_store.order.entity.OrderStatusEntity;
@@ -54,8 +54,8 @@ public class StatusUpdateStatusHandler {
         if (orderStatus == DELIVERED) {
             final PaymentTypeHandler paymentTypeHandler = paymentHandlers.get(orderEntity.getPaymentType());
             final int totalOrderPrice = orderProductRepository.getTotalOrderPrice(orderStatusDetails.getOrderId());
-            final OrderDetails orderDetails = new OrderDetails(orderEntity.getId(), orderEntity.getUserId(), totalOrderPrice, orderEntity.getShippingMethod(), orderEntity.getPaymentType(), DELIVERED.name());
-            paymentTypeHandler.handlePayment(orderDetails);
+            final OrderPaymentDetails orderPaymentDetails = new OrderPaymentDetails(orderEntity.getId(), orderEntity.getUserId(), totalOrderPrice, orderEntity.getShippingMethod(), orderEntity.getPaymentType());
+            paymentTypeHandler.handlePayment(orderPaymentDetails);
         } else if (orderStatus == SHIPPED) {
             warehouseOrderRepository.deleteByOrderId(orderStatusDetails.getOrderId());
             orderStatusRepository.save(new OrderStatusEntity(null, orderStatusDetails.getOrderId(), orderStatus.getId()));

@@ -39,6 +39,7 @@ public class AuthorityServiceTest {
         verify(authorityMapper, times(1)).toResponse(ROLE_STORE_WAREHOUSE_WORKER);
         verify(authorityMapper, times(1)).toResponse(ROLE_STORE_AUTHORITY_ADMIN);
         verify(authorityMapper, times(1)).toResponse(ROLE_STORE_PRODUCT_ADMIN);
+        verify(authorityMapper, times(1)).toResponse(ROLE_ORDER_STATUS_ADMIN);
     }
 
 }

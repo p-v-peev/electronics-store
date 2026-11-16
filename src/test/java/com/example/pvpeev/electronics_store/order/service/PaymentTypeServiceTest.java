@@ -19,15 +19,15 @@ public class PaymentTypeServiceTest {
     public void testGetAllPaymentTypes() {
         final PaymentTypeMapper paymentTypeMapper = new PaymentTypeMapperImpl();
 
-        final PaymentTypeHandler debitCardPaymentHandler = new DebitCardVisaPaymentHandler(null, null);
-        final PaymentTypeHandler paymentOnDeliveryHandler = new PaymentOnDeliveryHandler(null, null, null, List.of());
+        final PaymentTypeHandler debitCardPaymentHandler = new DebitCardVisaPaymentHandler(null, null, null);
+        final PaymentTypeHandler paymentOnDeliveryHandler = new PaymentOnDeliveryHandler(null, null, null);
 
         final PaymentTypeService paymentTypeService = new PaymentTypeService(paymentTypeMapper, List.of(debitCardPaymentHandler, paymentOnDeliveryHandler));
 
         assertThat(paymentTypeService.getAllPaymentTypes())
                 .containsExactlyInAnyOrder(
-                        new PaymentTypeResponse(1, PaymentType.PAYMENT_ON_DELIVERY.getName(), PaymentType.PAYMENT_ON_DELIVERY.getDescription()),
-                        new PaymentTypeResponse(2, PaymentType.DEBIT_CARD_VISA.getName(), PaymentType.DEBIT_CARD_VISA.getDescription())
+                        new PaymentTypeResponse(1, PaymentType.PAYMENT_ON_DELIVERY.getDisplayName(), PaymentType.PAYMENT_ON_DELIVERY.getDescription()),
+                        new PaymentTypeResponse(2, PaymentType.DEBIT_CARD_VISA.getDisplayName(), PaymentType.DEBIT_CARD_VISA.getDescription())
                 );
     }
 
@@ -35,11 +35,11 @@ public class PaymentTypeServiceTest {
     public void testGetExistingPaymentPaymentTypes() {
         final PaymentTypeMapper paymentTypeMapper = new PaymentTypeMapperImpl();
 
-        final PaymentTypeHandler debitCardPaymentHandler = new DebitCardVisaPaymentHandler(null, null);
+        final PaymentTypeHandler debitCardPaymentHandler = new DebitCardVisaPaymentHandler(null, null, null);
 
         final PaymentTypeService paymentTypeService = new PaymentTypeService(paymentTypeMapper, List.of(debitCardPaymentHandler));
 
-        assertThat(paymentTypeService.getPaymentTypeByName(PaymentType.DEBIT_CARD_VISA.getName()))
+        assertThat(paymentTypeService.getPaymentTypeByName(PaymentType.DEBIT_CARD_VISA.name()))
                 .get()
                 .isEqualTo(PaymentType.DEBIT_CARD_VISA);
     }
@@ -48,7 +48,7 @@ public class PaymentTypeServiceTest {
     public void testGetUnexistingPaymentPaymentTypes() {
         final PaymentTypeMapper paymentTypeMapper = new PaymentTypeMapperImpl();
 
-        final PaymentTypeHandler debitCardPaymentHandler = new DebitCardVisaPaymentHandler(null, null);
+        final PaymentTypeHandler debitCardPaymentHandler = new DebitCardVisaPaymentHandler(null, null, null);
 
         final PaymentTypeService paymentTypeService = new PaymentTypeService(paymentTypeMapper, List.of(debitCardPaymentHandler));
 

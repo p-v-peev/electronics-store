@@ -18,7 +18,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -44,10 +43,6 @@ public class OrderService {
             throw new ResourceNotFoundException();
         }
         return orderMapper.toResponse(order.get());
-    }
-
-    public List<OrderEntity> findAllById(List<UUID> orders) {
-        return orderRepository.findAllById(orders);
     }
 
     public CompletableFuture<UUID> ingestOrder(OrderRequest order) {

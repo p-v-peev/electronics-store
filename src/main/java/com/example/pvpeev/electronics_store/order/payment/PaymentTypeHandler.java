@@ -1,10 +1,14 @@
 package com.example.pvpeev.electronics_store.order.payment;
 
 
-import com.example.pvpeev.electronics_store.order.dto.internal.OrderDetails;
+import com.example.pvpeev.electronics_store.order.dto.internal.OrderPaymentDetails;
+
+import java.util.UUID;
 
 public interface PaymentTypeHandler {
     PaymentType getSupportedPaymentType();
 
-    void handlePayment(OrderDetails orderRequest);
+    boolean requiresPayment(UUID orderId);
+
+    void handlePayment(OrderPaymentDetails orderRequest);
 }

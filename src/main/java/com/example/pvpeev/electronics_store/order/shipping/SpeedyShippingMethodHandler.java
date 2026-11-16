@@ -17,8 +17,8 @@ public class SpeedyShippingMethodHandler implements ShippingMethodHandler {
     }
 
     @Override
-    public UUID requestOrderPayment(Integer amount) {
-        System.out.println("Requesting payment " + getSupportedShippingMethod().getName() + " " + amount);
+    public UUID requestOrderPayment(UUID orderId, Integer amount) {
+        System.out.printf("Requesting payment of: %d for order: %s", amount, orderId.toString());
         return UUID.randomUUID();
     }
 }

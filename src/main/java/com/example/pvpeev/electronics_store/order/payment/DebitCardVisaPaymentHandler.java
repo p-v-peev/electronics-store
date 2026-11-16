@@ -1,22 +1,32 @@
 package com.example.pvpeev.electronics_store.order.payment;
 
-import com.example.pvpeev.electronics_store.order.dto.internal.OrderDetails;
-import com.example.pvpeev.electronics_store.order.entity.OrderStatusEntity;
-import com.example.pvpeev.electronics_store.order.entity.WarehouseOrderEntity;
-import com.example.pvpeev.electronics_store.order.repository.OrderStatusRepository;
-import com.example.pvpeev.electronics_store.order.repository.WarehouseOrderRepository;
+import com.example.pvpeev.electronics_store.order.dto.internal.OrderPaymentDetails;
+import com.example.pvpeev.electronics_store.order.service.OrderStatusService;
+import com.example.pvpeev.electronics_store.order.service.WarehouseService;
 import com.example.pvpeev.electronics_store.order.status.OrderStatus;
-import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Component
-@RequiredArgsConstructor
-public class DebitCardVisaPaymentHandler implements PaymentTypeHandler {
+public class DebitCardVisaPaymentHandler extends AbstractPaymentHandler {
 
-    private final OrderStatusRepository orderStatusRepository;
-    private final WarehouseOrderRepository warehouseOrderRepository;
+    private final OrderStatusService orderStatusService;
+    private final WarehouseService warehouseService;
+    private final JdbcTemplate jdbcTemplate;
 
+    public DebitCardVisaPaymentHandler(OrderStatusService orderStatusService, WarehouseService warehouseService, JdbcTemplate jdbcTemplate) {
+        super(orderStatusService);
+        this.orderStatusService = orderStatusService;
+        this.warehouseService = warehouseService;
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public PaymentType getSupportedPaymentType() {
@@ -25,16 +35,30 @@ public class DebitCardVisaPaymentHandler implements PaymentTypeHandler {
 
     @Override
     @Transactional
-    public void handlePayment(OrderDetails order) {
-        final OrderStatus orderStatus = OrderStatus.valueOf(order.getPreviousOrderStatus());
-        if (OrderStatus.ACCEPTED == orderStatus) {
-            System.out.println("Taxing user " + order.getUserId() + " amount " + order.getTotalPrice());
-            orderStatusRepository.save(new OrderStatusEntity(null, order.getOrderId(), OrderStatus.CONFIRMED.getId()));
-            orderStatusRepository.save(new OrderStatusEntity(null, order.getOrderId(), OrderStatus.PAID.getId()));
-            warehouseOrderRepository.save(new WarehouseOrderEntity(null, order.getOrderId(), null));
-            orderStatusRepository.save(new OrderStatusEntity(null, order.getOrderId(), OrderStatus.WAITING_WAREHOUSE.getId()));
-        } else if (OrderStatus.DELIVERED == orderStatus) {
-            orderStatusRepository.save(new OrderStatusEntity(null, order.getOrderId(), OrderStatus.COMPLETED.getId()));
+    public void handlePayment(OrderPaymentDetails order) {
+        if (super.requiresPayment(order.getOrderId())) {
+            final UUID uuid = requestOrderPayment(order.getOrderId(), order.getTotalPrice());
+            // TODO save the ID in Order Payment Log
+            final Map<UUID, Integer> parameters = Stream.of(OrderStatus.CONFIRMED.getId(), OrderStatus.PAID.getId(), OrderStatus.WAITING_WAREHOUSE.getId())
+                    .collect(Collectors.toMap(ignore -> order.getOrderId(), Function.identity()));
+            jdbcTemplate.batchUpdate("""
+                            INSERT INTO order_status (order_id, order_status)
+                            VALUES (?, ?)
+                            """,
+                    parameters.entrySet(),
+                    parameters.size(),
+                    (ps, argument) -> {
+                        ps.setObject(1, argument.getKey());
+                        ps.setInt(2, argument.getValue());
+                    });
+            warehouseService.persistNew(order.getOrderId());
+        } else {
+            orderStatusService.completeOrder(order.getOrderId());
         }
+    }
+
+    private UUID requestOrderPayment(UUID orderId, Integer amount) {
+        System.out.printf("Requesting payment of: %d for order: %s", amount, orderId.toString());
+        return UUID.randomUUID();
     }
 }

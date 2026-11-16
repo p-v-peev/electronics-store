@@ -53,7 +53,7 @@ public class OrderServiceTest {
     private OrderRepository orderRepository;
 
     @Spy
-    private PaymentTypeService paymentTypeService = new PaymentTypeService(new PaymentTypeMapperImpl(), List.of(new DebitCardVisaPaymentHandler(null, null)));
+    private PaymentTypeService paymentTypeService = new PaymentTypeService(new PaymentTypeMapperImpl(), List.of(new DebitCardVisaPaymentHandler(null, null, null)));
 
     @Spy
     private ShippingMethodService shippingMethodService = new ShippingMethodService(new ShippingMethodMapperImpl(), List.of(new DhlShippingMethodHandler()));
@@ -108,7 +108,7 @@ public class OrderServiceTest {
 
     @Test
     public void testIngestOrderInvalidShippingMethod() {
-        final OrderRequest request = new OrderRequest(UUID.randomUUID(), "Test address", PaymentType.DEBIT_CARD_VISA.getName(), "088314040", "INVALID_SHIPPING_METHOD", List.of());
+        final OrderRequest request = new OrderRequest(UUID.randomUUID(), "Test address", PaymentType.DEBIT_CARD_VISA.name(), "088314040", "INVALID_SHIPPING_METHOD", List.of());
         final Exception exception = catchRuntimeException(() -> orderService.ingestOrder(request));
         assertThat(exception)
                 .isInstanceOf(BadRequestException.class);
@@ -122,7 +122,7 @@ public class OrderServiceTest {
     public void testIngestOrder() {
         final UUID orderId = UUID.randomUUID();
         final Instant orderTime = Instant.now();
-        final OrderRequest request = new OrderRequest(UUID.randomUUID(), "Test address", PaymentType.DEBIT_CARD_VISA.getName(), "088314040", ShippingMethod.DHL.getName(), List.of());
+        final OrderRequest request = new OrderRequest(UUID.randomUUID(), "Test address", PaymentType.DEBIT_CARD_VISA.name(), "088314040", ShippingMethod.DHL.getName(), List.of());
         final OrderRequestWithId expectedOrderRequestEithId = new OrderRequestWithId(orderId, request, orderTime);
 
         when(uuidSupplier.get()).thenReturn(orderId);
